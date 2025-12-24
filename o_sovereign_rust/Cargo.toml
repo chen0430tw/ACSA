@@ -1,0 +1,64 @@
+[package]
+name = "o-sovereign"
+version = "0.1.0"
+edition = "2021"
+authors = ["O-Sovereign Team"]
+description = "ACSA (对抗约束型盲从代理) - Adversarially-Constrained Sycophantic Agent"
+
+[[bin]]
+name = "o-sovereign-desktop"
+path = "src/bin/desktop.rs"
+
+[[bin]]
+name = "o-sovereign-tui"
+path = "src/bin/tui.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# AI API clients
+async-openai = "0.20"  # OpenAI GPT-4/5
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# UI frameworks
+dioxus = "0.5"
+dioxus-desktop = "0.5"
+
+# CLI
+clap = { version = "4.4", features = ["derive"] }
+
+# Environment variables
+dotenv = "0.15"
+
+# Date/Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Async traits
+async-trait = "0.1"
+
+# Regex
+regex = "1.10"
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
