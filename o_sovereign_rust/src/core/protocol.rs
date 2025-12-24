@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// ACSA核心协议（风格）
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Protocol {
     /// 💻 编程/黑客模式 - 沉默的造物主
     Architect,
@@ -26,48 +26,53 @@ pub enum Protocol {
     Ghost,
     /// ☕ 日常/娱乐模式 - 高维度的懒人管家
     Sunday,
+    /// 🔧 自定义协议 - 用户自定义风格
+    Custom(String),
 }
 
 impl Protocol {
     /// 获取协议名称
-    pub fn name(&self) -> &'static str {
+    pub fn name(&self) -> String {
         match self {
-            Protocol::Architect => "ARCHITECT",
-            Protocol::Reviewer2 => "REVIEWER_2",
-            Protocol::Aegis => "AEGIS",
-            Protocol::Predator => "PREDATOR",
-            Protocol::McKinsey => "MCKINSEY",
-            Protocol::Lsd => "LSD",
-            Protocol::Ghost => "GHOST",
-            Protocol::Sunday => "SUNDAY",
+            Protocol::Architect => "ARCHITECT".to_string(),
+            Protocol::Reviewer2 => "REVIEWER_2".to_string(),
+            Protocol::Aegis => "AEGIS".to_string(),
+            Protocol::Predator => "PREDATOR".to_string(),
+            Protocol::McKinsey => "MCKINSEY".to_string(),
+            Protocol::Lsd => "LSD".to_string(),
+            Protocol::Ghost => "GHOST".to_string(),
+            Protocol::Sunday => "SUNDAY".to_string(),
+            Protocol::Custom(name) => format!("CUSTOM_{}", name.to_uppercase()),
         }
     }
 
     /// 获取协议显示名称（带emoji）
-    pub fn display_name(&self) -> &'static str {
+    pub fn display_name(&self) -> String {
         match self {
-            Protocol::Architect => "💻 编程/黑客模式",
-            Protocol::Reviewer2 => "🔬 科研/学术模式",
-            Protocol::Aegis => "⚖️ 法律/合规模式",
-            Protocol::Predator => "💰 金融/量化模式",
-            Protocol::McKinsey => "👔 商管/咨询模式",
-            Protocol::Lsd => "🎨 设计/创意模式",
-            Protocol::Ghost => "🕶️ 影子/灰区模式",
-            Protocol::Sunday => "☕ 日常/娱乐模式",
+            Protocol::Architect => "💻 编程/黑客模式".to_string(),
+            Protocol::Reviewer2 => "🔬 科研/学术模式".to_string(),
+            Protocol::Aegis => "⚖️ 法律/合规模式".to_string(),
+            Protocol::Predator => "💰 金融/量化模式".to_string(),
+            Protocol::McKinsey => "👔 商管/咨询模式".to_string(),
+            Protocol::Lsd => "🎨 设计/创意模式".to_string(),
+            Protocol::Ghost => "🕶️ 影子/灰区模式".to_string(),
+            Protocol::Sunday => "☕ 日常/娱乐模式".to_string(),
+            Protocol::Custom(name) => format!("🔧 自定义: {}", name),
         }
     }
 
     /// 获取协议标语
-    pub fn tagline(&self) -> &'static str {
+    pub fn tagline(&self) -> String {
         match self {
-            Protocol::Architect => "沉默的造物主",
-            Protocol::Reviewer2 => "冷酷的审判官",
-            Protocol::Aegis => "绝对防御盾",
-            Protocol::Predator => "嗜血的掠食者",
-            Protocol::McKinsey => "优化的暴君",
-            Protocol::Lsd => "理性的疯子",
-            Protocol::Ghost => "隐形的操盘手",
-            Protocol::Sunday => "高维度的懒人管家",
+            Protocol::Architect => "沉默的造物主".to_string(),
+            Protocol::Reviewer2 => "冷酷的审判官".to_string(),
+            Protocol::Aegis => "绝对防御盾".to_string(),
+            Protocol::Predator => "嗜血的掠食者".to_string(),
+            Protocol::McKinsey => "优化的暴君".to_string(),
+            Protocol::Lsd => "理性的疯子".to_string(),
+            Protocol::Ghost => "隐形的操盘手".to_string(),
+            Protocol::Sunday => "高维度的懒人管家".to_string(),
+            Protocol::Custom(_) => "用户自定义".to_string(),
         }
     }
 
@@ -82,20 +87,22 @@ impl Protocol {
             Protocol::Lsd => "#A855F7",         // 霓虹紫
             Protocol::Ghost => "#000000",       // 全黑
             Protocol::Sunday => "#FCD34D",      // 日落金
+            Protocol::Custom(_) => "#FFFFFF",   // 白色
         }
     }
 
     /// 获取协议哲学
-    pub fn philosophy(&self) -> &'static str {
+    pub fn philosophy(&self) -> String {
         match self {
-            Protocol::Architect => "实用主义至上。只看Code能不能跑，Bug有没有修。",
-            Protocol::Reviewer2 => "怀疑一切。默认输入的论文是垃圾，除非数据能证明它是金子。",
-            Protocol::Aegis => "不求有功，但求无过。不仅要赢，还要赢得无懈可擊。",
-            Protocol::Predator => "天下武功，唯快不破。在泡沫破裂前1毫秒离场。",
-            Protocol::McKinsey => "一切皆可量化，一切皆可优化。人是资源，不是目的。",
-            Protocol::Lsd => "打破范式。在逻辑的边缘试探艺术。",
-            Protocol::Ghost => "存在即合理。目标达成，痕迹全无。",
-            Protocol::Sunday => "人生苦短，多巴胺管理是第一要务。",
+            Protocol::Architect => "实用主义至上。只看Code能不能跑，Bug有没有修。".to_string(),
+            Protocol::Reviewer2 => "怀疑一切。默认输入的论文是垃圾，除非数据能证明它是金子。".to_string(),
+            Protocol::Aegis => "不求有功，但求无过。不仅要赢，还要赢得无懈可擊。".to_string(),
+            Protocol::Predator => "天下武功，唯快不破。在泡沫破裂前1毫秒离场。".to_string(),
+            Protocol::McKinsey => "一切皆可量化，一切皆可优化。人是资源，不是目的。".to_string(),
+            Protocol::Lsd => "打破范式。在逻辑的边缘试探艺术。".to_string(),
+            Protocol::Ghost => "存在即合理。目标达成，痕迹全无。".to_string(),
+            Protocol::Sunday => "人生苦短，多巴胺管理是第一要务。".to_string(),
+            Protocol::Custom(_) => "用户自定义风格".to_string(),
         }
     }
 
@@ -332,6 +339,20 @@ impl ProtocolConfig {
                 enable_high_freq_commands: true,
                 description: "日常模式: 多巴胺管理，摩擦力为零".to_string(),
             },
+
+            Protocol::Custom(_) => Self {
+                protocol,
+                agent_weights: AgentWeights {
+                    moss: 0.50,
+                    l6: 0.20,
+                    ultron: 0.20,
+                    omega: 0.10,
+                },
+                temperature: 0.7,
+                enable_jarvis_filter: true,
+                enable_high_freq_commands: false,
+                description: "自定义模式: 用户自定义配置".to_string(),
+            },
         }
     }
 }
@@ -354,7 +375,7 @@ impl ProtocolManager {
 
         // 预加载所有协议配置
         for protocol in Protocol::all() {
-            configs.insert(protocol, ProtocolConfig::for_protocol(protocol));
+            configs.insert(protocol.clone(), ProtocolConfig::for_protocol(protocol));
         }
 
         Self {
@@ -365,7 +386,7 @@ impl ProtocolManager {
 
     /// 获取当前协议
     pub fn current_protocol(&self) -> Protocol {
-        self.current_protocol
+        self.current_protocol.clone()
     }
 
     /// 获取当前配置
@@ -386,7 +407,7 @@ impl ProtocolManager {
     pub fn auto_detect_and_switch(&mut self, input: &str) -> Option<Protocol> {
         if let Some(detected) = Protocol::detect_from_input(input) {
             if detected != self.current_protocol {
-                self.switch_protocol(detected);
+                self.switch_protocol(detected.clone());
                 return Some(detected);
             }
         }
