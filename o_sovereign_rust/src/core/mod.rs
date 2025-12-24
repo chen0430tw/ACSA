@@ -12,6 +12,7 @@ pub mod jarvis;
 pub mod multimodal;
 pub mod opencode;
 pub mod opencode_connector;
+pub mod protocol;
 pub mod providers;
 pub mod router;
 pub mod types;
@@ -30,6 +31,7 @@ pub use opencode::OpenCodeExecutor;
 pub use opencode_connector::{
     CodeStats, ExecutionReceipt, MissionPack, OpenCodeConfig, OpenCodeConnector, TestResults,
 };
+pub use protocol::{AgentWeights, Protocol, ProtocolConfig, ProtocolManager};
 pub use providers::{create_provider, ModelProvider};
 pub use router::ACSARouter;
 pub use types::*;
