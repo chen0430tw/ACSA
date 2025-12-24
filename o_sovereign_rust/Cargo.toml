@@ -54,6 +54,9 @@ async-trait = "0.1"
 # Regex
 regex = "1.10"
 
+# Base64 encoding
+base64 = "0.21"
+
 [features]
 default = []
 ui = ["dioxus", "dioxus-desktop"]

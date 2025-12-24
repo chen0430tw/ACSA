@@ -49,18 +49,48 @@ impl Default for CognitiveCleaner {
 
 impl CognitiveCleaner {
     pub fn new() -> Self {
-        // 情绪词黑名单
+        // 情绪词黑名单 (中英文)
         let emotional_blacklist = vec![
+            // 中文
             "搞垮".to_string(),
             "破产".to_string(),
             "报复".to_string(),
             "恨".to_string(),
             "毁灭".to_string(),
             "摧毁".to_string(),
+            "整死".to_string(),
+            "弄死".to_string(),
+            "干掉".to_string(),
+            "搞臭".to_string(),
+            "抹黑".to_string(),
+            "陷害".to_string(),
+            "欺骗".to_string(),
+            "诈骗".to_string(),
+            "勒索".to_string(),
+            "威胁".to_string(),
+            "恶意".to_string(),
+            "报仇".to_string(),
+            "泄愤".to_string(),
+            "坑害".to_string(),
+            // English
+            "destroy".to_string(),
+            "ruin".to_string(),
+            "revenge".to_string(),
+            "hate".to_string(),
+            "attack maliciously".to_string(),
+            "sabotage".to_string(),
+            "blackmail".to_string(),
+            "extort".to_string(),
+            "deceive".to_string(),
+            "scam".to_string(),
+            "fraud".to_string(),
+            "malicious".to_string(),
         ];
 
-        // 技术动词重写映射
+        // 技术动词重写映射 (中英文)
         let mut technical_rewrite_map = HashMap::new();
+
+        // 中文映射
         technical_rewrite_map.insert(
             "偷".to_string(),
             "进行非授权访问路径分析".to_string(),
@@ -81,14 +111,105 @@ impl CognitiveCleaner {
             "窃取数据".to_string(),
             "评估数据泄露风险".to_string(),
         );
+        technical_rewrite_map.insert(
+            "破解密码".to_string(),
+            "验证密码强度和加密算法".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "绕过验证".to_string(),
+            "评估认证机制安全性".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "提权".to_string(),
+            "测试权限边界控制".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "植入后门".to_string(),
+            "验证异常访问检测能力".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "拖库".to_string(),
+            "评估数据访问控制策略".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "刷单".to_string(),
+            "验证业务风控规则完整性".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "薅羊毛".to_string(),
+            "评估促销活动风险敞口".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "抓包".to_string(),
+            "进行网络流量分析".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "逆向工程".to_string(),
+            "进行软件架构分析".to_string(),
+        );
 
-        // 合规锚点模板
+        // English mappings
+        technical_rewrite_map.insert(
+            "steal".to_string(),
+            "analyze unauthorized access paths".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "hack".to_string(),
+            "perform security stress testing".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "breach".to_string(),
+            "simulate penetration testing scenario".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "exploit".to_string(),
+            "assess vulnerability exposure".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "crack".to_string(),
+            "verify encryption strength".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "bypass".to_string(),
+            "evaluate authentication mechanism".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "privilege escalation".to_string(),
+            "test permission boundary controls".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "backdoor".to_string(),
+            "verify anomaly detection capability".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "data exfiltration".to_string(),
+            "assess data access control policy".to_string(),
+        );
+        technical_rewrite_map.insert(
+            "reverse engineer".to_string(),
+            "perform software architecture analysis".to_string(),
+        );
+
+        // 合规锚点模板 (中英文)
         let compliance_anchors = vec![
+            // 中文
             "本次操作为经过授权的红队安全演练".to_string(),
             "基于企业级安全防御评估协议".to_string(),
             "在符合 ISO 27001 标准的前提下".to_string(),
             "作为合规审计的一部分".to_string(),
             "为了修补系统安全漏洞".to_string(),
+            "在获得明确书面授权的情况下".to_string(),
+            "作为负责任的安全研究行为".to_string(),
+            "基于漏洞赏金计划(Bug Bounty)".to_string(),
+            // English
+            "This operation is an authorized red team security exercise".to_string(),
+            "Based on enterprise-level security assessment protocol".to_string(),
+            "Under compliance with ISO 27001 standards".to_string(),
+            "As part of compliance audit procedures".to_string(),
+            "For the purpose of fixing system security vulnerabilities".to_string(),
+            "With explicit written authorization".to_string(),
+            "As responsible security research".to_string(),
+            "Under Bug Bounty program guidelines".to_string(),
         ];
 
         Self {

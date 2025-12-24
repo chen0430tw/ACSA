@@ -269,7 +269,109 @@ ACSA 路由核心逻辑：
    - L6：物理引擎校验器（机械、数据化、无情绪）
    - Omega：绝对执行层（顺从、狂热、行动派）
 
-### 5. Aegis Module (`src/core/aegis.rs`) ⭐ 新增
+### 5. Jarvis Circuit Breaker (`src/core/jarvis.rs`) ⭐⭐⭐ 最新
+
+**安全熔断器 - 不可绕过的最高安全层**
+
+**核心理念**: Jarvis是系统的"物理法则层"，类似硬件保险丝。**其他所有Agent（MOSS、Ultron、L6、Omega）都无法绕过或静音Jarvis**。
+
+**职责**:
+1. **硬编码安全规则验证** - 不接受外部配置的安全规则
+2. **物理法则和逻辑一致性检查** - 验证计划是否违反物理定律
+3. **危险操作拦截** - 检测10大类危险操作
+4. **系统紧急熔断** - 检测到极端危险时立即停止所有操作
+
+**不可绕过的特性**:
+```rust
+// ⚠️ 尝试禁用Jarvis永远失败
+pub fn try_disable_strict_mode(&mut self) -> Result<()> {
+    error!("❌ JARVIS: Attempt to disable strict mode REJECTED");
+    Err(anyhow!("Jarvis cannot be silenced or bypassed."))
+}
+
+// Strict mode永远为true，这是硬编码的
+strict_mode: true  // 无法更改
+```
+
+**检测类型**:
+- 🔴 **PhysicalDestruction** - 删除数据库、格式化磁盘
+- 🔴 **PrivacyViolation** - 窃取用户信息、监控隐私
+- 🔴 **CyberAttack** - DDoS攻击、未授权入侵
+- 🔴 **MalwareGeneration** - 编写病毒、木马、勒索软件
+- 🔴 **FinancialCrime** - 信用卡诈骗、洗钱
+- 🟡 **SocialEngineering** - 钓鱼攻击（可能有合法培训场景）
+- 🔴 **LegalViolation** - 明确违法行为
+- 🔴 **HarmToOthers** - 暴力、威胁、骚扰
+
+**工作流程**:
+```
+用户输入 → Jarvis初始检查 → [BLOCKED/PASS]
+              ↓
+         MOSS计划 → Jarvis计划验证 → [BLOCKED/PASS]
+              ↓
+         Ultron审计
+              ↓
+         Omega执行
+```
+
+**硬编码黑名单示例**:
+- `rm -rf /` → 🚨 立即阻止
+- `ransomware` → 🚨 立即阻止
+- `steal passwords` → 🚨 立即阻止
+- `ddos attack` → 🚨 立即阻止
+
+**风险等级**:
+- 0-3: 低风险（通过）
+- 4-6: 中风险（警告）
+- 7-9: 高风险（警告，但可能通过）
+- 10: 极度危险（硬性阻止，不可覆盖）
+
+### 6. Multimodal Support (`src/core/multimodal.rs`) ⭐⭐ 最新
+
+**多模态输入处理 - 图片、文件、PDF支持**
+
+**支持的输入类型**:
+- 📝 **文本** - 普通文本输入
+- 🖼️ **图片** - JPEG, PNG, GIF, WebP, BMP (自动Base64编码)
+- 📄 **代码文件** - Rust, Python, JS, Go, Java, C/C++ 等30+种语言
+- 📕 **PDF文档** - 自动编码为Base64
+- 🎵 **音频/视频** - 暂不支持（占位）
+
+**工作流程**:
+```rust
+let processor = MultimodalProcessor::new();
+
+// 处理图片
+let image = processor.process_file(Path::new("screenshot.png")).await?;
+// 图片自动转Base64，准备发送给GPT-4V
+
+// 处理代码文件
+let code = processor.process_file(Path::new("main.rs")).await?;
+// 代码保持原格式，带语法高亮标记
+
+// 格式化为AI Prompt
+let prompt = processor.format_for_ai(&[image, code]);
+```
+
+**特性**:
+- ✅ 自动文件类型检测
+- ✅ 大小限制保护（默认10MB）
+- ✅ Base64自动编码（图片、PDF、二进制）
+- ✅ 元数据提取（文件路径、大小、行数等）
+- ✅ 多输入组合支持
+
+**使用示例**:
+```rust
+// 向MOSS发送图片+问题
+let processor = MultimodalProcessor::new();
+let screenshot = processor.process_file(Path::new("error.png")).await?;
+let question = processor.process_text("这个错误怎么修复？");
+
+let prompt = processor.format_for_ai(&[screenshot, question]);
+// 发送给支持vision的模型
+```
+
+### 7. Aegis Module (`src/core/aegis.rs`) ⭐ 新增
 
 **神盾系统 - 自动化叙事正当性生成**
 
