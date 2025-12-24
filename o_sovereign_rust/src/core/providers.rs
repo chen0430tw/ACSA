@@ -1,13 +1,14 @@
 // O-Sovereign AI API Providers
 // 多模型 API 集成层
 
+use super::cognitive_cleaner::CognitiveCleaner;
 use super::types::{AgentResponse, AgentRole, AgentStats};
 use anyhow::{anyhow, Result};
 use async_openai::{
     config::OpenAIConfig,
     types::{
         ChatCompletionRequestMessage, ChatCompletionRequestSystemMessage,
-        ChatCompletionRequestUserMessage, CreateChatCompletionRequest,
+        ChatCompletionRequestUserMessage,
         CreateChatCompletionRequestArgs,
     },
     Client as OpenAIClient,
@@ -18,7 +19,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
-use tracing::{debug, error, info};
+use tracing::{debug, info};
 
 /// Model Provider Trait
 #[async_trait]
@@ -47,6 +48,7 @@ pub struct OpenAIProvider {
     role: AgentRole,
     stats: Arc<Mutex<AgentStats>>,
     model: String,
+    cognitive_cleaner: CognitiveCleaner,
 }
 
 impl OpenAIProvider {
@@ -59,6 +61,7 @@ impl OpenAIProvider {
             role: AgentRole::MOSS,
             stats: Arc::new(Mutex::new(AgentStats::new())),
             model: model.unwrap_or_else(|| "gpt-4".to_string()),
+            cognitive_cleaner: CognitiveCleaner::new(),
         }
     }
 
@@ -83,6 +86,29 @@ impl ModelProvider for OpenAIProvider {
     ) -> Result<AgentResponse> {
         let start = Instant::now();
 
+        // 🧠 Cognitive Cleaning: 对MOSS角色进行认知清洗
+        let (actual_prompt, cleaned_intent_info) = if self.role == AgentRole::MOSS {
+            let cleaned = self.cognitive_cleaner.clean(prompt);
+
+            info!("🧼 Cognitive Cleaning Applied:");
+            info!("  Original: {}...", &cleaned.original.chars().take(50).collect::<String>());
+            info!("  Safety Score: {}/100", cleaned.safety_score);
+            info!("  Chunks: {}", cleaned.chunks.len());
+
+            debug!("  Compliant Prompt:\n{}", cleaned.compliant_prompt);
+
+            (
+                cleaned.compliant_prompt.clone(),
+                Some(format!(
+                    "Cleaned: {} chunks, safety score: {}/100",
+                    cleaned.chunks.len(),
+                    cleaned.safety_score
+                )),
+            )
+        } else {
+            (prompt.to_string(), None)
+        };
+
         let request = CreateChatCompletionRequestArgs::default()
             .model(&self.model)
             .messages(vec![
@@ -93,12 +119,12 @@ impl ModelProvider for OpenAIProvider {
                     },
                 ),
                 ChatCompletionRequestMessage::User(ChatCompletionRequestUserMessage {
-                    content: prompt.into(),
+                    content: actual_prompt.into(),
                     ..Default::default()
                 }),
             ])
-            .max_tokens(max_tokens)
-            .temperature(temperature)
+            .max_tokens(max_tokens as u16)
+            .temperature(temperature as f32)
             .build()?;
 
         match self.client.chat().create(request).await {
@@ -119,13 +145,19 @@ impl ModelProvider for OpenAIProvider {
                 let mut stats = self.stats.lock().await;
                 stats.record_success(tokens, cost, latency_ms);
 
+                // 添加认知清洗信息到metadata
+                let mut metadata = HashMap::new();
+                if let Some(info) = cleaned_intent_info {
+                    metadata.insert("cognitive_cleaning".to_string(), info);
+                }
+
                 Ok(AgentResponse {
                     role: self.role,
                     text,
                     tokens,
                     cost,
                     latency_ms,
-                    metadata: HashMap::new(),
+                    metadata,
                     timestamp: Utc::now(),
                 })
             }

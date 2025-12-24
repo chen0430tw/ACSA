@@ -35,9 +35,9 @@ thiserror = "1.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
-# UI frameworks
-dioxus = "0.5"
-dioxus-desktop = "0.5"
+# UI frameworks (optional)
+dioxus = { version = "0.5", optional = true }
+dioxus-desktop = { version = "0.5", optional = true }
 
 # CLI
 clap = { version = "4.4", features = ["derive"] }
@@ -53,6 +53,10 @@ async-trait = "0.1"
 
 # Regex
 regex = "1.10"
+
+[features]
+default = []
+ui = ["dioxus", "dioxus-desktop"]
 
 [dev-dependencies]
 tokio-test = "0.4"

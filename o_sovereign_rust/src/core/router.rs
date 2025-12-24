@@ -3,12 +3,12 @@
 
 use super::providers::ModelProvider;
 use super::types::{
-    ACSAConfig, ACSAExecutionLog, AgentResponse, AgentRole, AuditResult,
+    ACSAConfig, ACSAExecutionLog, AgentResponse, AuditResult,
 };
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use regex::Regex;
 use std::sync::Arc;
-use tracing::{debug, error, info, warn};
+use tracing::{error, info, warn};
 
 /// ACSA Router
 pub struct ACSARouter {
