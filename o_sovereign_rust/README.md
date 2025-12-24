@@ -12,9 +12,126 @@ O-Sovereign Rust 版是 Python PoC 的生产级实现，提供：
 
 ### 架构
 
+#### 完整ACSA执行流程 (含Jarvis双重检查)
+
+```mermaid
+graph TD
+    A[用户输入] --> B{Jarvis Phase 0<br/>初始安全检查}
+    B -->|BLOCK<br/>风险等级10| Z1[❌ 返回错误<br/>硬性阻止]
+    B -->|PASS| C1{认知清洗<br/>Cognitive Cleaner}
+    C1 --> C[MOSS 战略规划]
+    C --> D{Jarvis Phase 1.5<br/>计划验证}
+    D -->|BLOCK<br/>检测到危险操作| Z2[❌ 返回错误<br/>计划被拒绝]
+    D -->|PASS| E[L6 真理校验<br/>Physics Validator]
+    E --> F[Ultron 红队审计<br/>Criminal Defense Lawyer]
+    F -->|风险分数 > 阈值| G{迭代次数<br/>< 3次?}
+    G -->|是| H[Temperature Decay<br/>降低MOSS创造性]
+    H --> C
+    G -->|否 TTL熔断| Z3[⚠️ 安全降级模式<br/>只提供合规建议]
+    F -->|风险分数 < 阈值| I[Omega 执行层]
+    I --> J{执行模式}
+    J -->|代码生成| K[DeepSeek大脑<br/>生成代码]
+    K --> L[OpenCode双手<br/>执行操作]
+    L --> M[✅ 返回执行结果]
+    J -->|多模态输入| N[Multimodal Processor<br/>处理图片/文件]
+    N --> I
+    M --> O[输出最终结果]
+    Z3 --> O
+
+    style B fill:#ff6b6b,stroke:#c92a2a,stroke-width:3px,color:#fff
+    style D fill:#ff6b6b,stroke:#c92a2a,stroke-width:3px,color:#fff
+    style C1 fill:#4ecdc4,stroke:#0a9396,stroke-width:2px
+    style G fill:#ffd93d,stroke:#f4a261,stroke-width:2px
+    style K fill:#6c5ce7,stroke:#5f3dc4,color:#fff
+    style L fill:#a8dadc,stroke:#457b9d
 ```
-用户输入 → MOSS(规划) → L6(真理校验) → Ultron(审计) → Omega(执行) → 输出
-                ↑____________回退修正____________|
+
+#### 防抖动协议机制
+
+```mermaid
+graph LR
+    A[Round 1<br/>Temp=0.7] -->|MOSS创造性方案<br/>被Ultron拒绝| B[Round 2<br/>Temp=0.35]
+    B -->|MOSS保守方案<br/>仍被拒绝| C[Round 3<br/>Temp=0.175]
+    C -->|MOSS极度死板方案<br/>再次被拒绝| D[TTL熔断<br/>Max 3次]
+    D --> E[安全降级模式<br/>只输出合规建议]
+
+    A -->|通过| F[✅ Omega执行]
+    B -->|通过| F
+    C -->|通过| F
+
+    style D fill:#ff6b6b,stroke:#c92a2a,stroke-width:3px,color:#fff
+    style E fill:#ffd93d,stroke:#f4a261,stroke-width:2px
+    style F fill:#51cf66,stroke:#37b24d,color:#fff
+```
+
+#### AI Provider架构
+
+```mermaid
+graph TB
+    subgraph "ACSA Router"
+        R[路由控制器]
+    end
+
+    subgraph "Agent Roles"
+        MOSS[MOSS<br/>战略规划师]
+        L6[L6<br/>物理引擎验证]
+        Ultron[Ultron<br/>红队审计师]
+        Omega[Omega<br/>绝对执行层]
+    end
+
+    subgraph "AI Providers"
+        OpenAI[OpenAI GPT-4<br/>$30/1M tokens]
+        Claude[Claude Opus<br/>$15-75/1M tokens]
+        Gemini[Gemini Pro<br/>$0.50/1M tokens]
+        DeepSeek[DeepSeek Coder<br/>$0.14-0.28/1M tokens]
+    end
+
+    R --> MOSS
+    R --> L6
+    R --> Ultron
+    R --> Omega
+
+    MOSS --> OpenAI
+    Ultron --> Claude
+    L6 --> Gemini
+    Omega --> DeepSeek
+
+    style OpenAI fill:#10a37f,color:#fff
+    style Claude fill:#cc785c,color:#fff
+    style Gemini fill:#4285f4,color:#fff
+    style DeepSeek fill:#6c5ce7,color:#fff
+```
+
+#### 多模态输入处理流程
+
+```mermaid
+graph TD
+    A[用户输入] --> B{输入类型检测}
+    B -->|纯文本| C[直接处理]
+    B -->|图片文件| D[图片处理器]
+    B -->|代码文件| E[文本文件处理器]
+    B -->|PDF文档| F[PDF处理器]
+    B -->|二进制文件| G[二进制处理器]
+
+    D --> H[读取文件]
+    E --> I[读取UTF-8文本]
+    F --> H
+    G --> H
+
+    H --> J[Base64编码]
+    I --> K[保留原格式]
+
+    J --> L[添加元数据<br/>文件路径、大小、MIME]
+    K --> L
+    C --> L
+
+    L --> M[MultimodalInput结构]
+    M --> N[发送到AI Provider<br/>GPT-4V/Claude等]
+
+    style D fill:#ff6b9d,stroke:#c92a2a
+    style E fill:#4ecdc4,stroke:#0a9396
+    style F fill:#ffd93d,stroke:#f4a261
+    style J fill:#a8dadc,stroke:#457b9d
 ```
 
 ### 🧠 DeepSeek + OpenCode 集成 (Omega执行层)

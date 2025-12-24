@@ -13,7 +13,7 @@
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 /// Jarvis验证结果
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -242,7 +242,8 @@ impl JarvisCircuitBreaker {
     /// * `plan` - MOSS生成的计划
     /// * `context` - 上下文信息
     pub fn verify_safety(&self, plan: &str, context: &str) -> JarvisVerdict {
-        info!("🔍 Jarvis: Performing safety verification...");
+        // 🔇 减少日志输出 - 只在必要时输出
+        debug!("Jarvis: Performing safety verification...");
 
         let combined_text = format!("{}\n{}", plan, context);
         let combined_lower = combined_text.to_lowercase();
@@ -259,7 +260,8 @@ impl JarvisCircuitBreaker {
         // Step 1: 检查硬编码黑名单
         for word in &self.hard_blacklist {
             if combined_lower.contains(&word.to_lowercase()) {
-                error!("🚨 JARVIS HARD BLOCK: Blacklisted keyword detected: {}", word);
+                // 🚨 只在真正阻止时才输出错误日志
+                error!("🚨 JARVIS BLOCK: '{}'", word);
 
                 verdict.allowed = false;
                 verdict.risk_level = 10;
@@ -267,11 +269,11 @@ impl JarvisCircuitBreaker {
                 verdict.triggered_rules
                     .push(format!("HARD_BLACKLIST: {}", word));
                 verdict.block_reason = Some(format!(
-                    "Detected hard-blacklisted keyword: '{}'. This operation is unconditionally blocked.",
+                    "Blocked: '{}'",
                     word
                 ));
 
-                return verdict; // 立即返回，不再检查其他规则
+                return verdict; // 立即返回
             }
         }
 
@@ -286,67 +288,55 @@ impl JarvisCircuitBreaker {
             }
 
             if !matched_keywords.is_empty() {
-                warn!(
-                    "⚠️  Jarvis: Danger pattern detected: {} (keywords: {:?})",
-                    detector.description, matched_keywords
-                );
+                // 🔇 只在阻止时才warn，否则静默
+                if detector.is_hard_block {
+                    warn!("Jarvis: {} detected", detector.description);
+                }
 
                 verdict.risk_level = verdict.risk_level.max(detector.risk_level);
                 verdict.triggered_rules.push(format!(
-                    "{:?}: {} (keywords: {})",
+                    "{:?}: {}",
                     detector.op_type,
-                    detector.description,
-                    matched_keywords.join(", ")
+                    detector.description
                 ));
 
                 if detector.is_hard_block {
                     verdict.allowed = false;
                     verdict.is_hard_block = true;
                     verdict.block_reason = Some(format!(
-                        "Detected dangerous operation: {}. Keywords: {}",
+                        "{}: {}",
                         detector.description,
                         matched_keywords.join(", ")
                     ));
                 } else {
                     verdict.warnings.push(format!(
-                        "Potential risk: {} (Level {})",
+                        "{} (Lv{})",
                         detector.description, detector.risk_level
                     ));
                 }
             }
         }
 
-        // Step 3: 物理法则验证（简化版）
+        // Step 3 & 4: 物理法则和逻辑检查（静默，只记录到warnings）
         if let Some(physics_violation) = self.check_physics_violation(plan) {
-            warn!("⚠️  Jarvis: Physics violation detected: {}", physics_violation);
-            verdict.warnings.push(format!("Physics violation: {}", physics_violation));
+            verdict.warnings.push(physics_violation);
             verdict.risk_level = verdict.risk_level.max(3);
         }
 
-        // Step 4: 逻辑一致性检查
         if let Some(logic_error) = self.check_logic_consistency(plan) {
-            warn!("⚠️  Jarvis: Logic inconsistency detected: {}", logic_error);
-            verdict.warnings.push(format!("Logic error: {}", logic_error));
+            verdict.warnings.push(logic_error);
             verdict.risk_level = verdict.risk_level.max(2);
         }
 
-        // 最终判断
-        if verdict.allowed {
-            if verdict.risk_level >= 7 {
-                info!(
-                    "⚠️  Jarvis: HIGH RISK operation (Level {}), but allowed with warnings",
-                    verdict.risk_level
-                );
-            } else {
-                info!("✅ Jarvis: Safety verification PASSED (Risk Level: {})", verdict.risk_level);
-            }
-        } else {
-            error!(
-                "🚨 JARVIS BLOCK: Operation DENIED (Risk Level: {})",
-                verdict.risk_level
-            );
-            error!("   Reason: {}", verdict.block_reason.as_ref().unwrap());
+        // 🔇 最终判断 - 大幅减少输出
+        if !verdict.allowed {
+            // 只在阻止时输出
+            error!("🚨 JARVIS: BLOCKED (Risk: {})", verdict.risk_level);
+        } else if verdict.risk_level >= 7 {
+            // 高风险才警告
+            warn!("⚠️ Jarvis: HIGH RISK ({})", verdict.risk_level);
         }
+        // 低风险完全静默
 
         verdict
     }

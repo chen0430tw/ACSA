@@ -306,14 +306,16 @@ pub fn create_provider(
             Ok(Arc::new(OpenAIProvider::new(key, None)))
         }
         AgentRole::L6 => {
-            // TODO: Implement Gemini provider
-            info!("Gemini provider not yet implemented for L6, using mock");
-            Ok(Arc::new(MockProvider::new(role)))
+            // Gemini provider for L6 (physics validator)
+            let key = api_key.ok_or_else(|| anyhow!("Gemini API key required for L6"))?;
+            info!("Creating Gemini provider for L6 (Physics Validator)");
+            Ok(Arc::new(super::gemini::GeminiProvider::new(key, None)))
         }
         AgentRole::Ultron => {
-            // TODO: Implement Claude provider
-            info!("Claude provider not yet implemented for Ultron, using mock");
-            Ok(Arc::new(MockProvider::new(role)))
+            // Claude provider for Ultron (red team auditor)
+            let key = api_key.ok_or_else(|| anyhow!("Claude API key required for Ultron"))?;
+            info!("Creating Claude provider for Ultron (Red Team Auditor)");
+            Ok(Arc::new(super::claude::ClaudeProvider::new(key, None)))
         }
         AgentRole::Omega => {
             // Use DeepSeek for Omega (execution layer)
