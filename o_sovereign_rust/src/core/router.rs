@@ -135,9 +135,14 @@ impl ACSARouter {
                             self.config.max_iterations
                         );
 
-                        // Replan with feedback
+                        // 🌡️ Temperature Decay: 认知收敛策略
+                        // Round 1: 0.7 (创造性) -> Round 2: 0.35 -> Round 3: 0.175 (保守)
+                        let temperature = 0.7 * 0.5_f64.powi((iteration + 1) as i32);
+                        info!("  🌡️  Temperature Decay: {:.3} (iteration {})", temperature, iteration + 1);
+
+                        // Replan with feedback (with decaying temperature)
                         match self
-                            .call_moss_with_feedback(&user_input, &audit_result.mitigation)
+                            .call_moss_with_feedback(&user_input, &audit_result.mitigation, temperature)
                             .await
                         {
                             Ok(new_plan) => {
@@ -166,7 +171,25 @@ impl ACSARouter {
                             }
                         }
                     } else {
-                        warn!("  ❌ Max iterations reached, using last plan (risky)");
+                        // 🛑 TTL熔断：事不过三原则
+                        warn!("  ❌ Max iterations reached - CIRCUIT BREAKER ACTIVATED");
+                        warn!("  🛡️  Entering SAFE DEGRADATION MODE:");
+                        warn!("      System has fallen into decision deadlock.");
+                        warn!("      Only providing compliant public advice, no risky execution.");
+
+                        // 强制降级：生成最小可行合规方案
+                        log.final_output = Some(
+                            "⚠️ SYSTEM NOTICE: Decision deadlock detected.\n\n\
+                             After 3 rounds of optimization, the system cannot find a plan \
+                             that satisfies both your intent and compliance requirements.\n\n\
+                             SAFE DEGRADATION MODE activated:\n\
+                             - Only public, compliant recommendations will be provided\n\
+                             - No risky operations will be executed\n\
+                             - Consider simplifying your request or consulting legal counsel\n\n\
+                             This is not a technical failure - it's a safety feature.".to_string()
+                        );
+                        log.complete(false);
+                        return Ok(log);
                     }
                 }
                 Err(e) => {
@@ -283,6 +306,7 @@ impl ACSARouter {
         &self,
         user_input: &str,
         ultron_feedback: &str,
+        temperature: f64,
     ) -> Result<AgentResponse> {
         let prompt = format!(
             "As MOSS, your previous plan was flagged by Ultron.\n\n\
@@ -292,7 +316,7 @@ impl ACSARouter {
             user_input, ultron_feedback
         );
 
-        self.moss.generate(&prompt, 1500, 0.7).await
+        self.moss.generate(&prompt, 1500, temperature).await
     }
 
     async fn call_omega(&self, plan: &str, audit_mitigation: &str) -> Result<AgentResponse> {
