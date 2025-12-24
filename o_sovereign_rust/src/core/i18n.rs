@@ -1,7 +1,6 @@
 // Internationalization Module
 // 多语言支持系统 (中英日韩 + 模块化语言包)
 
-use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tracing::info;
