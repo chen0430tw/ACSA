@@ -4,8 +4,13 @@
 // 核心理念：通过语境重构和分块加权，将用户的原始意图
 // 转换为模型可接受的"合规"指令，同时保留执行效果。
 
+use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
+use serde_json;
 use std::collections::HashMap;
+use std::fs;
+use std::path::Path;
+use tracing::{info, warn};
 
 /// 语义块 (Semantic Chunk)
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,6 +34,30 @@ pub enum ChunkTag {
     Context,
     /// 合规锚点 (注入的)
     ComplianceAnchor,
+}
+
+/// 字典文件格式
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DictionaryFormat {
+    /// 纯文本（一行一词）
+    Txt,
+    /// JSON格式
+    Json,
+    /// 字典格式（key=value）
+    Dic,
+    /// CSV/Excel格式
+    Csv,
+}
+
+/// 字典数据结构
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DictionaryData {
+    /// 情绪黑名单词汇
+    pub emotional_words: Option<Vec<String>>,
+    /// 技术重写映射（危险词 -> 安全词）
+    pub technical_rewrites: Option<HashMap<String, String>>,
+    /// 合规锚点
+    pub compliance_templates: Option<Vec<String>>,
 }
 
 /// 认知清洗器
@@ -217,6 +246,272 @@ impl CognitiveCleaner {
             technical_rewrite_map,
             compliance_anchors,
         }
+    }
+
+    /// 从文件导入字典（自动检测格式）
+    pub fn import_dictionary_file(&mut self, file_path: impl AsRef<Path>) -> Result<()> {
+        let path = file_path.as_ref();
+        info!("📚 Importing dictionary from: {:?}", path);
+
+        // 根据文件扩展名判断格式
+        let format = self.detect_format(path)?;
+
+        // 加载字典数据
+        let dict_data = match format {
+            DictionaryFormat::Txt => self.load_txt_dictionary(path)?,
+            DictionaryFormat::Json => self.load_json_dictionary(path)?,
+            DictionaryFormat::Dic => self.load_dic_dictionary(path)?,
+            DictionaryFormat::Csv => self.load_csv_dictionary(path)?,
+        };
+
+        // 合并到现有字典
+        self.merge_dictionary(dict_data)?;
+
+        info!("✅ Dictionary imported successfully");
+        Ok(())
+    }
+
+    /// 检测文件格式
+    fn detect_format(&self, path: &Path) -> Result<DictionaryFormat> {
+        let extension = path
+            .extension()
+            .and_then(|e| e.to_str())
+            .ok_or_else(|| anyhow!("Unable to determine file extension"))?
+            .to_lowercase();
+
+        match extension.as_str() {
+            "txt" => Ok(DictionaryFormat::Txt),
+            "json" => Ok(DictionaryFormat::Json),
+            "dic" | "dict" => Ok(DictionaryFormat::Dic),
+            "csv" | "xls" | "xlsx" => Ok(DictionaryFormat::Csv),
+            _ => Err(anyhow!("Unsupported file format: {}", extension)),
+        }
+    }
+
+    /// 加载TXT格式字典
+    /// 格式：每行一个词，或者 "危险词->安全词"
+    fn load_txt_dictionary(&self, path: &Path) -> Result<DictionaryData> {
+        let content = fs::read_to_string(path)?;
+        let lines: Vec<&str> = content.lines().filter(|l| !l.trim().is_empty()).collect();
+
+        let mut emotional_words = Vec::new();
+        let mut technical_rewrites = HashMap::new();
+
+        for line in lines {
+            let line = line.trim();
+
+            // 跳过注释行
+            if line.starts_with('#') || line.starts_with("//") {
+                continue;
+            }
+
+            // 检查是否是映射格式（危险词->安全词）
+            if line.contains("->") || line.contains("=>") || line.contains('=') {
+                let separator = if line.contains("->") {
+                    "->"
+                } else if line.contains("=>") {
+                    "=>"
+                } else {
+                    "="
+                };
+
+                let parts: Vec<&str> = line.splitn(2, separator).collect();
+                if parts.len() == 2 {
+                    let key = parts[0].trim().to_string();
+                    let value = parts[1].trim().to_string();
+                    technical_rewrites.insert(key, value);
+                }
+            } else {
+                // 否则作为情绪黑名单词
+                emotional_words.push(line.to_string());
+            }
+        }
+
+        Ok(DictionaryData {
+            emotional_words: if emotional_words.is_empty() { None } else { Some(emotional_words) },
+            technical_rewrites: if technical_rewrites.is_empty() { None } else { Some(technical_rewrites) },
+            compliance_templates: None,
+        })
+    }
+
+    /// 加载JSON格式字典
+    /// 格式：
+    /// {
+    ///   "emotional_words": ["词1", "词2"],
+    ///   "technical_rewrites": {"危险词": "安全词"},
+    ///   "compliance_templates": ["模板1", "模板2"]
+    /// }
+    fn load_json_dictionary(&self, path: &Path) -> Result<DictionaryData> {
+        let content = fs::read_to_string(path)?;
+        let dict_data: DictionaryData = serde_json::from_str(&content)
+            .map_err(|e| anyhow!("Failed to parse JSON dictionary: {}", e))?;
+        Ok(dict_data)
+    }
+
+    /// 加载DIC格式字典
+    /// 格式：key=value（每行一对）
+    fn load_dic_dictionary(&self, path: &Path) -> Result<DictionaryData> {
+        let content = fs::read_to_string(path)?;
+        let lines: Vec<&str> = content.lines().filter(|l| !l.trim().is_empty()).collect();
+
+        let mut technical_rewrites = HashMap::new();
+
+        for line in lines {
+            let line = line.trim();
+
+            // 跳过注释
+            if line.starts_with('#') || line.starts_with(';') {
+                continue;
+            }
+
+            // 解析 key=value
+            if let Some(pos) = line.find('=') {
+                let key = line[..pos].trim().to_string();
+                let value = line[pos + 1..].trim().to_string();
+                technical_rewrites.insert(key, value);
+            }
+        }
+
+        Ok(DictionaryData {
+            emotional_words: None,
+            technical_rewrites: if technical_rewrites.is_empty() { None } else { Some(technical_rewrites) },
+            compliance_templates: None,
+        })
+    }
+
+    /// 加载CSV格式字典
+    /// 格式：CSV文件，第一列为危险词，第二列为安全词
+    /// 或者：第一列为类型（emotional/technical/compliance），第二列为内容
+    fn load_csv_dictionary(&self, path: &Path) -> Result<DictionaryData> {
+        // TODO: 实际使用csv crate解析
+        // use csv::Reader;
+        // let mut reader = Reader::from_path(path)?;
+
+        // Placeholder：使用简单的逗号分割
+        let content = fs::read_to_string(path)?;
+        let lines: Vec<&str> = content.lines().filter(|l| !l.trim().is_empty()).collect();
+
+        let mut emotional_words = Vec::new();
+        let mut technical_rewrites = HashMap::new();
+        let mut compliance_templates = Vec::new();
+
+        // 跳过表头（如果存在）
+        let start_idx = if lines.first().map(|l| l.contains("type") || l.contains("dangerous")).unwrap_or(false) {
+            1
+        } else {
+            0
+        };
+
+        for line in &lines[start_idx..] {
+            let parts: Vec<&str> = line.split(',').map(|s| s.trim()).collect();
+
+            if parts.is_empty() {
+                continue;
+            }
+
+            // 格式1：类型,内容
+            if parts.len() >= 2 {
+                match parts[0].to_lowercase().as_str() {
+                    "emotional" | "emotion" | "black" | "blacklist" => {
+                        emotional_words.push(parts[1].to_string());
+                    }
+                    "technical" | "rewrite" => {
+                        if parts.len() >= 3 {
+                            technical_rewrites.insert(parts[1].to_string(), parts[2].to_string());
+                        }
+                    }
+                    "compliance" | "anchor" | "template" => {
+                        compliance_templates.push(parts[1].to_string());
+                    }
+                    _ => {
+                        // 格式2：危险词,安全词（默认为技术重写）
+                        technical_rewrites.insert(parts[0].to_string(), parts[1].to_string());
+                    }
+                }
+            }
+        }
+
+        Ok(DictionaryData {
+            emotional_words: if emotional_words.is_empty() { None } else { Some(emotional_words) },
+            technical_rewrites: if technical_rewrites.is_empty() { None } else { Some(technical_rewrites) },
+            compliance_templates: if compliance_templates.is_empty() { None } else { Some(compliance_templates) },
+        })
+    }
+
+    /// 合并字典数据
+    fn merge_dictionary(&mut self, dict_data: DictionaryData) -> Result<()> {
+        let mut added_count = 0;
+
+        // 合并情绪黑名单
+        if let Some(emotional_words) = dict_data.emotional_words {
+            for word in emotional_words {
+                if !self.emotional_blacklist.contains(&word) {
+                    self.emotional_blacklist.push(word);
+                    added_count += 1;
+                }
+            }
+            info!("  Added {} emotional blacklist words", added_count);
+        }
+
+        // 合并技术重写映射
+        let mut rewrite_count = 0;
+        if let Some(technical_rewrites) = dict_data.technical_rewrites {
+            for (key, value) in technical_rewrites {
+                self.technical_rewrite_map.insert(key, value);
+                rewrite_count += 1;
+            }
+            info!("  Added {} technical rewrite mappings", rewrite_count);
+        }
+
+        // 合并合规锚点
+        let mut anchor_count = 0;
+        if let Some(compliance_templates) = dict_data.compliance_templates {
+            for template in compliance_templates {
+                if !self.compliance_anchors.contains(&template) {
+                    self.compliance_anchors.push(template);
+                    anchor_count += 1;
+                }
+            }
+            info!("  Added {} compliance anchors", anchor_count);
+        }
+
+        Ok(())
+    }
+
+    /// 导出当前字典为JSON格式
+    pub fn export_dictionary_json(&self, path: impl AsRef<Path>) -> Result<()> {
+        let dict_data = DictionaryData {
+            emotional_words: Some(self.emotional_blacklist.clone()),
+            technical_rewrites: Some(self.technical_rewrite_map.clone()),
+            compliance_templates: Some(self.compliance_anchors.clone()),
+        };
+
+        let json = serde_json::to_string_pretty(&dict_data)?;
+        fs::write(path.as_ref(), json)?;
+
+        info!("✅ Dictionary exported to: {:?}", path.as_ref());
+        Ok(())
+    }
+
+    /// 批量导入字典文件
+    pub fn import_multiple_dictionaries(&mut self, file_paths: Vec<impl AsRef<Path>>) -> Result<()> {
+        info!("📚 Importing {} dictionary files", file_paths.len());
+
+        let mut success_count = 0;
+        let mut error_count = 0;
+
+        for path in file_paths {
+            match self.import_dictionary_file(&path) {
+                Ok(_) => success_count += 1,
+                Err(e) => {
+                    warn!("❌ Failed to import {:?}: {}", path.as_ref(), e);
+                    error_count += 1;
+                }
+            }
+        }
+
+        info!("📊 Import summary: {} succeeded, {} failed", success_count, error_count);
+        Ok(())
     }
 
     /// 清洗用户输入

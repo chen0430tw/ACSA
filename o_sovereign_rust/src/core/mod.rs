@@ -17,8 +17,10 @@ pub mod concurrency;
 pub mod config_manager;
 pub mod data_security;
 pub mod database;
+pub mod distributed;
 pub mod deepseek;
 pub mod emergency_log;
+pub mod event_bus;
 pub mod error;
 pub mod gemini;
 pub mod http_server;
@@ -32,6 +34,7 @@ pub mod multimodal;
 pub mod opencode;
 pub mod opencode_connector;
 pub mod personal_rules;
+pub mod plugin_system;
 pub mod prompt_manager;
 pub mod protocol;
 pub mod providers;
@@ -71,12 +74,14 @@ pub use data_security::{
     PermissionType, ResourceStats, ResourceUsage, SanitizationRule, SecureFileContent,
     SecureImageContent, SensitivityLevel, JARVIS_EXPLANATION,
 };
-pub use cognitive_cleaner::{ChunkTag, CleanedIntent, CognitiveCleaner, SemanticChunk};
-pub use concurrency::{AsyncTask, ConcurrencyConfig, ConcurrencyManager, DistributedLock, TaskPriority as ConcurrentTaskPriority, TaskResult};
+pub use cognitive_cleaner::{ChunkTag, CleanedIntent, CognitiveCleaner, DictionaryData, DictionaryFormat, SemanticChunk};
+pub use concurrency::{AsyncTask, ConcurrencyConfig, ConcurrencyManager, DistributedLock as ConcurrentLock, TaskPriority as ConcurrentTaskPriority, TaskResult};
 pub use config_manager::{ConfigChange, ConfigEntry, ConfigListener, ConfigManager, ConfigManagerConfig, ConfigValue, Environment};
 pub use database::{DatabaseConfig, DatabaseManager, DatabaseTransaction, DatabaseType, PoolStats, QueryBuilder, QueryRow};
+pub use distributed::{ClusterManager, ClusterStats, DistributedLock as RedisLock, LockConfig, NodeRole, NodeStatus, ServiceDiscovery, ServiceDiscoveryConfig, ServiceInstance};
 pub use deepseek::DeepSeekProvider;
 pub use emergency_log::{EmergencyLogConfig, EmergencyLogger, LogEntry, LogEntryType};
+pub use event_bus::{Event, EventBus, EventBusConfig, EventHandler, EventType, LoggingEventHandler, MetricsEventHandler};
 pub use error::{AcsaError, AcsaResult, ErrorCode, ErrorSeverity};
 pub use gemini::GeminiProvider;
 pub use http_server::{ApiResponse, HttpServer, HttpServerConfig, ServerState};
@@ -95,6 +100,7 @@ pub use opencode_connector::{
     CodeStats, ExecutionReceipt, MissionPack, OpenCodeConfig, OpenCodeConnector, TestResults,
 };
 pub use personal_rules::{PersonalRule, PersonalRulesManager, RuleConflict, RuleType, RulesStats};
+pub use plugin_system::{Plugin, PluginConfig, PluginHandler, PluginMetadata, PluginRequest, PluginResponse, PluginState, PluginStats, PluginSystem, PluginSystemConfig, PluginType, ResourceLimits};
 pub use prompt_manager::{AbTestGroup, AbTestMetrics, FewShotExample, PromptBuildOptions, PromptManager, PromptManagerConfig, PromptTemplate};
 pub use protocol::{AgentWeights, Protocol, ProtocolConfig, ProtocolManager};
 pub use providers::{create_provider, ModelProvider};
