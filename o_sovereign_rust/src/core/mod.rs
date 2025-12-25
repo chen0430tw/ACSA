@@ -112,9 +112,10 @@ pub use rate_limiter::{RateLimitLevel, RateLimitRecord, RateLimitResult, RateLim
 pub use router::ACSARouter;
 pub use shadow_mode::{AccessAudit, MaskingConfig, MaskingStrategy, MaskedData, PiiDetection, PiiType, ShadowModeConfig, ShadowModeEngine};
 pub use sovereignty::{
-    BioActivity, CircuitBreakerConfig, DecisionEvent, DecisionType, DoseMeter, DoseStats,
-    ExecCircuitBreaker, RiskLevel, SovereigntyConfig, SovereigntySystem, SOVEREIGNTY,
-    generate_bio_activity_report,
+    AntiAddictionConfig, BioActivity, ChartDataPoint, CircuitBreakerConfig, DailyUsage,
+    DecisionEvent, DecisionType, DoseMeter, DoseStats, ExecCircuitBreaker, RiskLevel,
+    SovereigntyConfig, SovereigntySystem, UsageSession, UsageTracker, WeeklyUsage, SOVEREIGNTY,
+    generate_bio_activity_report, generate_usage_report,
 };
 pub use sosa_api_pool::{
     ApiCallEvent, ApiEndpoint, ApiErrorType, ApiProviderType, Attractor, BinaryTwin,
