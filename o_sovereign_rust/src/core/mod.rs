@@ -12,23 +12,30 @@ pub mod cache_manager;
 pub mod claude;
 pub mod cognitive_cleaner;
 pub mod concurrency;
+pub mod config_manager;
 pub mod data_security;
+pub mod database;
 pub mod deepseek;
 pub mod emergency_log;
 pub mod error;
 pub mod gemini;
+pub mod http_server;
 pub mod i18n;
 pub mod image_generator;
 pub mod jarvis;
 pub mod mcp_server;
+pub mod metrics;
 pub mod multimodal;
 pub mod opencode;
 pub mod opencode_connector;
 pub mod personal_rules;
 pub mod protocol;
 pub mod providers;
+pub mod rate_limiter;
 pub mod router;
+pub mod shadow_mode;
 pub mod sosa_api_pool;
+pub mod sosa_crypto;
 pub mod sosa_learning;
 pub mod task_tracker;
 pub mod terminal_server;
@@ -59,10 +66,13 @@ pub use data_security::{
 };
 pub use cognitive_cleaner::{ChunkTag, CleanedIntent, CognitiveCleaner, SemanticChunk};
 pub use concurrency::{AsyncTask, ConcurrencyConfig, ConcurrencyManager, DistributedLock, TaskPriority as ConcurrentTaskPriority, TaskResult};
+pub use config_manager::{ConfigChange, ConfigEntry, ConfigListener, ConfigManager, ConfigManagerConfig, ConfigValue, Environment};
+pub use database::{DatabaseConfig, DatabaseManager, DatabaseTransaction, DatabaseType, PoolStats, QueryBuilder, QueryRow};
 pub use deepseek::DeepSeekProvider;
 pub use emergency_log::{EmergencyLogConfig, EmergencyLogger, LogEntry, LogEntryType};
 pub use error::{AcsaError, AcsaResult, ErrorCode, ErrorSeverity};
 pub use gemini::GeminiProvider;
+pub use http_server::{ApiResponse, HttpServer, HttpServerConfig, ServerState};
 pub use i18n::{I18n, Language, TranslationKey};
 pub use image_generator::{GenerationConfig, ImageGenerator};
 pub use jarvis::{DangerousOp, JarvisCircuitBreaker, JarvisVerdict};
@@ -70,6 +80,7 @@ pub use mcp_server::{
     AcsaMcpServer, ClientInfo, McpPrompt, McpRequest, McpResource, McpResponse, McpTool,
     McpToolHandler, create_acsa_mcp_server,
 };
+pub use metrics::{ApplicationMetrics, ComponentHealth, HealthCheck, HealthStatus, MetricType, MetricValue, MetricsCollector, SystemMetrics};
 pub use multimodal::{ModalityType, MultimodalInput, MultimodalMetadata, MultimodalProcessor};
 pub use opencode::OpenCodeExecutor;
 pub use opencode_connector::{
@@ -78,11 +89,14 @@ pub use opencode_connector::{
 pub use personal_rules::{PersonalRule, PersonalRulesManager, RuleConflict, RuleType, RulesStats};
 pub use protocol::{AgentWeights, Protocol, ProtocolConfig, ProtocolManager};
 pub use providers::{create_provider, ModelProvider};
+pub use rate_limiter::{RateLimitLevel, RateLimitRecord, RateLimitResult, RateLimitRule, RateLimitStrategy, RateLimiter, RateLimiterConfig};
 pub use router::ACSARouter;
+pub use shadow_mode::{AccessAudit, MaskingConfig, MaskingStrategy, MaskedData, PiiDetection, PiiType, ShadowModeConfig, ShadowModeEngine};
 pub use sosa_api_pool::{
     ApiCallEvent, ApiEndpoint, ApiErrorType, ApiProviderType, Attractor, BinaryTwin,
     EndpointStatus, LocalModelConfig, PoolConfig, SosaApiPool, SosaCore, SparseMarkov,
 };
+pub use sosa_crypto::{CryptoAlgorithm, CryptoKey, CryptoStats, EncryptedData, KeyPurpose, SosaCryptoConfig, SosaCryptoEngine};
 pub use sosa_learning::{
     EventOutcome, KnowledgeNode, LearningConfig, LearningEvent, LearningSummary, SosaLearningEngine,
 };
