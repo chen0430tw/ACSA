@@ -129,6 +129,12 @@ pub struct ApplicationMetrics {
     pub ai_api_calls: u64,
     /// AI调用成本
     pub ai_api_cost: f64,
+    /// H(t) 生物活性当前值 (0-100)
+    pub bio_activity_ht: f64,
+    /// H(t) 衰减率 (%)
+    pub bio_activity_decay: f64,
+    /// 主权模式是否启用
+    pub sovereignty_enabled: bool,
 }
 
 /// 指标收集器
@@ -254,6 +260,24 @@ impl MetricsCollector {
     pub async fn set_active_connections(&self, count: u64) {
         let mut metrics = self.app_metrics.write().await;
         metrics.active_connections = count;
+    }
+
+    /// 更新 H(t) 生物活性指标
+    pub async fn update_bio_activity(&self, ht: f64, decay: f64, sovereignty_enabled: bool) {
+        let mut metrics = self.app_metrics.write().await;
+        metrics.bio_activity_ht = ht;
+        metrics.bio_activity_decay = decay;
+        metrics.sovereignty_enabled = sovereignty_enabled;
+    }
+
+    /// 获取 H(t) 生物活性指标
+    pub async fn get_bio_activity(&self) -> (f64, f64, bool) {
+        let metrics = self.app_metrics.read().await;
+        (
+            metrics.bio_activity_ht,
+            metrics.bio_activity_decay,
+            metrics.sovereignty_enabled,
+        )
     }
 
     /// 获取健康检查结果

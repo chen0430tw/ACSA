@@ -43,6 +43,7 @@ pub mod rag_engine;
 pub mod rate_limiter;
 pub mod router;
 pub mod shadow_mode;
+pub mod sovereignty;
 pub mod sosa_api_pool;
 pub mod sosa_crypto;
 pub mod sosa_learning;
@@ -110,6 +111,11 @@ pub use rag_engine::{ChunkingStrategy, Document as RagDocument, DocumentChunk, E
 pub use rate_limiter::{RateLimitLevel, RateLimitRecord, RateLimitResult, RateLimitRule, RateLimitStrategy, RateLimiter, RateLimiterConfig};
 pub use router::ACSARouter;
 pub use shadow_mode::{AccessAudit, MaskingConfig, MaskingStrategy, MaskedData, PiiDetection, PiiType, ShadowModeConfig, ShadowModeEngine};
+pub use sovereignty::{
+    BioActivity, CircuitBreakerConfig, DecisionEvent, DecisionType, DoseMeter, DoseStats,
+    ExecCircuitBreaker, RiskLevel, SovereigntyConfig, SovereigntySystem, SOVEREIGNTY,
+    generate_bio_activity_report,
+};
 pub use sosa_api_pool::{
     ApiCallEvent, ApiEndpoint, ApiErrorType, ApiProviderType, Attractor, BinaryTwin,
     EndpointStatus, LocalModelConfig, PoolConfig, SosaApiPool, SosaCore, SparseMarkov,
