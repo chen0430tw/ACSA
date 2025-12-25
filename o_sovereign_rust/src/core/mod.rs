@@ -3,6 +3,7 @@
 pub mod addressing_system;
 pub mod aegis;
 pub mod agent_extension;
+pub mod aipc_controller;
 pub mod api_manager;
 pub mod auth_system;
 pub mod auto_takeover;
@@ -17,6 +18,7 @@ pub mod emergency_log;
 pub mod error;
 pub mod gemini;
 pub mod i18n;
+pub mod image_generator;
 pub mod jarvis;
 pub mod mcp_server;
 pub mod multimodal;
@@ -31,6 +33,8 @@ pub mod sosa_learning;
 pub mod task_tracker;
 pub mod terminal_server;
 pub mod types;
+pub mod voice_processor;
+pub mod workflow_engine;
 
 pub use addressing_system::{AddressingConfig, AddressingMode, AddressingStyle, AddressingSystem};
 pub use aegis::{AegisModule, DefenseDocType, DefenseDocument};
@@ -38,6 +42,7 @@ pub use agent_extension::{
     AgentApiConfig, AgentCallRecord, AgentExtensionManager, AgentInfo, AgentList, AgentMetrics,
     AgentType, CustomAgent, DiminishingReturns, Recommendation,
 };
+pub use aipc_controller::{AipcController, HardwareCommand, HardwareStatus, HardwareType};
 pub use api_manager::{ApiCallRecord, ApiKeyConfig, ApiManager, ApiProvider, ProviderStats};
 pub use auth_system::{AuthConfig, AuthManager, Claims, SessionInfo, TokenPair};
 pub use auto_takeover::{AutoTakeoverEngine, TakeoverAction, TakeoverPolicy, TakeoverResult, TakeoverStats};
@@ -59,6 +64,7 @@ pub use emergency_log::{EmergencyLogConfig, EmergencyLogger, LogEntry, LogEntryT
 pub use error::{AcsaError, AcsaResult, ErrorCode, ErrorSeverity};
 pub use gemini::GeminiProvider;
 pub use i18n::{I18n, Language, TranslationKey};
+pub use image_generator::{GenerationConfig, ImageGenerator};
 pub use jarvis::{DangerousOp, JarvisCircuitBreaker, JarvisVerdict};
 pub use mcp_server::{
     AcsaMcpServer, ClientInfo, McpPrompt, McpRequest, McpResource, McpResponse, McpTool,
@@ -83,3 +89,5 @@ pub use sosa_learning::{
 pub use task_tracker::{Task, TaskPriority, TaskStatus, TaskTracker};
 pub use terminal_server::{ClientConnection, DefaultHandler, MessageHandler, ServerConfig, TerminalServer, WsMessage};
 pub use types::*;
+pub use voice_processor::{SttResult, VoiceConfig, VoiceProcessor};
+pub use workflow_engine::{Workflow, WorkflowEngine, WorkflowStep};
