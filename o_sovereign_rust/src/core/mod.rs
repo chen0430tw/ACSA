@@ -1,8 +1,10 @@
 // O-Sovereign Core Module
 
+pub mod addressing_system;
 pub mod aegis;
 pub mod agent_extension;
 pub mod api_manager;
+pub mod auth_system;
 pub mod auto_takeover;
 pub mod behavior_monitor;
 pub mod cache_manager;
@@ -30,12 +32,14 @@ pub mod task_tracker;
 pub mod terminal_server;
 pub mod types;
 
+pub use addressing_system::{AddressingConfig, AddressingMode, AddressingStyle, AddressingSystem};
 pub use aegis::{AegisModule, DefenseDocType, DefenseDocument};
 pub use agent_extension::{
     AgentApiConfig, AgentCallRecord, AgentExtensionManager, AgentInfo, AgentList, AgentMetrics,
     AgentType, CustomAgent, DiminishingReturns, Recommendation,
 };
 pub use api_manager::{ApiCallRecord, ApiKeyConfig, ApiManager, ApiProvider, ProviderStats};
+pub use auth_system::{AuthConfig, AuthManager, Claims, SessionInfo, TokenPair};
 pub use auto_takeover::{AutoTakeoverEngine, TakeoverAction, TakeoverPolicy, TakeoverResult, TakeoverStats};
 pub use behavior_monitor::{
     BehaviorContext, BehaviorMonitor, BehaviorMonitorConfig, BehaviorPattern, BehaviorProfile,
