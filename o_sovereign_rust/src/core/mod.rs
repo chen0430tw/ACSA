@@ -8,6 +8,7 @@ pub mod behavior_monitor;
 pub mod cache_manager;
 pub mod claude;
 pub mod cognitive_cleaner;
+pub mod data_security;
 pub mod deepseek;
 pub mod error;
 pub mod gemini;
@@ -39,6 +40,11 @@ pub use behavior_monitor::{
 };
 pub use cache_manager::{CacheManager, CacheType, CacheUsage, CleanupPolicy, CleanupStats};
 pub use claude::ClaudeProvider;
+pub use data_security::{
+    DataCategory, DataSecurityManager, FileAccessPermission, ImageFormat, PermissionRequest,
+    PermissionType, ResourceStats, ResourceUsage, SanitizationRule, SecureFileContent,
+    SecureImageContent, SensitivityLevel, JARVIS_EXPLANATION,
+};
 pub use cognitive_cleaner::{ChunkTag, CleanedIntent, CognitiveCleaner, SemanticChunk};
 pub use deepseek::DeepSeekProvider;
 pub use error::{AcsaError, AcsaResult, ErrorCode, ErrorSeverity};
