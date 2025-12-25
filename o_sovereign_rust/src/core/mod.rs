@@ -33,6 +33,7 @@ pub mod metrics;
 pub mod multimodal;
 pub mod opencode;
 pub mod opencode_connector;
+pub mod performance;
 pub mod personal_rules;
 pub mod plugin_system;
 pub mod prompt_manager;
@@ -99,6 +100,7 @@ pub use opencode::OpenCodeExecutor;
 pub use opencode_connector::{
     CodeStats, ExecutionReceipt, MissionPack, OpenCodeConfig, OpenCodeConnector, TestResults,
 };
+pub use performance::{CacheWarmer, EventBatcher, GLOBAL_OPTIMIZER, GLOBAL_SCHEDULER, PerformanceOptimizer, PhaseTracker, PriorityScheduler, StartupMetrics};
 pub use personal_rules::{PersonalRule, PersonalRulesManager, RuleConflict, RuleType, RulesStats};
 pub use plugin_system::{Plugin, PluginConfig, PluginHandler, PluginMetadata, PluginRequest, PluginResponse, PluginState, PluginStats, PluginSystem, PluginSystemConfig, PluginType, ResourceLimits};
 pub use prompt_manager::{AbTestGroup, AbTestMetrics, FewShotExample, PromptBuildOptions, PromptManager, PromptManagerConfig, PromptTemplate};
