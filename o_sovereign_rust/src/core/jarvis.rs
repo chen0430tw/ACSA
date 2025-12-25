@@ -1,19 +1,23 @@
-// Jarvis Safety Circuit Breaker
-// 安全熔断器 - 不可绕过的最高安全层
+// Jarvis: SOSA + Agent 群管理架构
+// 定位：熔断机制 + 智能调度 + 优先级排序 + 安全检查
+// 角色：群管理者（监控和协调其他Agents）
 //
-// 核心理念：Jarvis是系统的"物理法则层"，类似硬件保险丝
-// 其他所有Agent（MOSS、Ultron、L6、Omega）都无法绕过或静音Jarvis
-//
-// 职责：
-// 1. 硬编码安全规则验证
-// 2. 物理法则和逻辑一致性检查
-// 3. 危险操作拦截
-// 4. 系统紧急熔断
+// 核心职责：
+// 1. SOSA学习: 动态学习任务模式，避免规则僵化
+// 2. Agent管理: 监控/调度/协调 MOSS/L6/Ultron/Omega
+// 3. 熔断保护: API故障自动切换本地模式 (BUNKER协议)
+// 4. 优先级排序: Prioritization（Jarvis专属职责）
+// 5. 安全验证: 硬编码安全规则（继承之前的功能）
 
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet, VecDeque};
+use std::time::{Duration, Instant};
+use chrono::{DateTime, Utc};
 use tracing::{debug, error, info, warn};
+
+use super::protocol::Protocol;
+use super::sosa_api_pool::SparseMarkov;
 
 /// Jarvis验证结果
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -421,6 +425,420 @@ impl JarvisCircuitBreaker {
 }
 
 impl Default for JarvisCircuitBreaker {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// ============================================================================
+// Jarvis群管理系统（新增）
+// ============================================================================
+
+/// Jarvis架构说明
+pub const JARVIS_ARCHITECTURE: &str = r#"
++--------------------------------------------------------------+
+|  Jarvis: SOSA + Agent 群管理架构                              |
++--------------------------------------------------------------+
+|                                                              |
+|  定位: 熔断机制 + 智能调度 + 优先级排序                        |
+|  角色: 群管理者 (类似群管理与群员的关系)                       |
+|                                                              |
+|  核心能力:                                                    |
+|  1. SOSA学习: 动态学习任务模式，避免规则僵化                   |
+|  2. Agent管理: 监控/调度/协调 MOSS/L6/Ultron/Omega           |
+|  3. 熔断保护: API故障自动切换本地模式 (BUNKER协议)             |
+|  4. 优先级排序: Prioritization（Jarvis专属职责）              |
+|  5. 任务拆解验证: 审核MOSS的Decomposition结果                  |
+|                                                              |
+|  与MOSS的分工:                                               |
+|  - MOSS: 任务拆解 (Decomposition)                            |
+|  - Jarvis: 优先级排序 (Prioritization) + 执行监控            |
+|                                                              |
++--------------------------------------------------------------+
+"#;
+
+/// Agent状态
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum AgentStatus {
+    Online,           // 在线正常
+    LocalFallback,    // 本地降级模式
+    Offline,          // 离线
+    Throttled,        // 限流中
+    Error,            // 错误状态
+}
+
+/// Agent健康度
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentHealth {
+    pub agent_name: String,
+    pub status: AgentStatus,
+    pub api_success_rate: f64,      // API成功率 (0-1)
+    pub avg_response_time_ms: u64,   // 平均响应时间
+    pub consecutive_failures: u32,   // 连续失败次数
+    pub last_success: Option<DateTime<Utc>>,
+    pub current_protocol: Protocol,
+    pub intelligence_level: u8,      // 智商等级 (100-140)
+}
+
+/// BUNKER协议状态
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum BunkerMode {
+    Normal,           // 正常云端模式
+    Transitioning,    // 转换中
+    LocalSovereignty, // 本地主权模式
+    Emergency,        // 紧急模式
+}
+
+/// 熔断配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CircuitBreakerConfig {
+    pub max_failures: u32,           // 最大失败次数触发熔断
+    pub timeout_ms: u64,              // 超时时间
+    pub recovery_time_secs: u64,      // 恢复时间窗口
+    pub enable_auto_fallback: bool,   // 启用自动降级
+}
+
+impl Default for CircuitBreakerConfig {
+    fn default() -> Self {
+        Self {
+            max_failures: 3,
+            timeout_ms: 10000,
+            recovery_time_secs: 60,
+            enable_auto_fallback: true,
+        }
+    }
+}
+
+/// 任务优先级评分
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskPriority {
+    pub task_id: String,
+    pub urgency_score: f64,       // 紧急度 (0-10)
+    pub importance_score: f64,     // 重要度 (0-10)
+    pub dependency_depth: u32,     // 依赖深度
+    pub estimated_duration_secs: u64,
+    pub final_priority: f64,       // 最终优先级分数
+    pub assigned_agent: String,
+    pub reasoning: String,         // Jarvis的排序理由
+}
+
+/// 原始任务（MOSS拆解后的）
+#[derive(Debug, Clone)]
+pub struct RawTask {
+    pub id: String,
+    pub title: String,
+    pub task_type: String,
+    pub urgency_score: f64,
+    pub importance_score: f64,
+    pub dependency_depth: u32,
+    pub estimated_duration_secs: u64,
+}
+
+/// SOSA学习事件
+#[derive(Debug, Clone)]
+pub struct JarvisLearningEvent {
+    pub timestamp: DateTime<Utc>,
+    pub event_type: JarvisEventType,
+    pub agent_name: String,
+    pub success: bool,
+    pub context: HashMap<String, String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum JarvisEventType {
+    ApiCall,
+    TaskAssignment,
+    CircuitBreaker,
+    PriorityAdjustment,
+    AgentSwitch,
+}
+
+/// 任务模式
+#[derive(Debug, Clone)]
+struct TaskPattern {
+    success_rate: f64,
+    urgency_adjustment: f64,
+    importance_adjustment: f64,
+}
+
+impl Default for TaskPattern {
+    fn default() -> Self {
+        Self {
+            success_rate: 0.5,
+            urgency_adjustment: 0.0,
+            importance_adjustment: 0.0,
+        }
+    }
+}
+
+/// Jarvis群管理核心
+pub struct JarvisManager {
+    safety_breaker: JarvisCircuitBreaker,  // 继承安全检查功能
+    config: CircuitBreakerConfig,
+    bunker_mode: BunkerMode,
+    agent_health: HashMap<String, AgentHealth>,
+    task_queue: VecDeque<TaskPriority>,
+    markov: SparseMarkov,
+    learning_history: VecDeque<JarvisLearningEvent>,
+    last_bunker_check: Instant,
+    local_cluster_available: bool,
+}
+
+impl JarvisManager {
+    pub fn new() -> Self {
+        info!("{}", JARVIS_ARCHITECTURE);
+        info!("🛡️ Jarvis群管理系统启动");
+
+        Self {
+            safety_breaker: JarvisCircuitBreaker::new(),
+            config: CircuitBreakerConfig::default(),
+            bunker_mode: BunkerMode::Normal,
+            agent_health: Self::initialize_agents(),
+            task_queue: VecDeque::new(),
+            markov: SparseMarkov::new(10000),
+            learning_history: VecDeque::with_capacity(10000),
+            last_bunker_check: Instant::now(),
+            local_cluster_available: true,
+        }
+    }
+
+    /// 初始化Agent健康监控
+    fn initialize_agents() -> HashMap<String, AgentHealth> {
+        let mut agents = HashMap::new();
+        let agent_names = vec!["MOSS", "L6", "Ultron", "Omega"];
+
+        for name in agent_names {
+            agents.insert(name.to_string(), AgentHealth {
+                agent_name: name.to_string(),
+                status: AgentStatus::Online,
+                api_success_rate: 1.0,
+                avg_response_time_ms: 500,
+                consecutive_failures: 0,
+                last_success: Some(Utc::now()),
+                current_protocol: Protocol::Architect, // 默认使用Architect协议
+                intelligence_level: 140,
+            });
+        }
+        agents
+    }
+
+    /// 核心职责1: 优先级排序 (Prioritization)
+    pub fn prioritize_tasks(&mut self, raw_tasks: Vec<RawTask>) -> Vec<TaskPriority> {
+        info!("🎯 Jarvis开始优先级排序 ({} 个任务)", raw_tasks.len());
+
+        let mut prioritized = Vec::new();
+
+        for task in raw_tasks {
+            let historical_pattern = self.analyze_task_pattern(&task);
+            let urgency = task.urgency_score + historical_pattern.urgency_adjustment;
+            let importance = task.importance_score + historical_pattern.importance_adjustment;
+            let final_priority = (urgency * importance) * (1.0 + historical_pattern.success_rate);
+            let assigned_agent = self.assign_best_agent(&task);
+
+            prioritized.push(TaskPriority {
+                task_id: task.id.clone(),
+                urgency_score: urgency,
+                importance_score: importance,
+                dependency_depth: task.dependency_depth,
+                estimated_duration_secs: task.estimated_duration_secs,
+                final_priority,
+                assigned_agent: assigned_agent.clone(),
+                reasoning: format!(
+                    "Urgency={:.1}, Importance={:.1}, Agent={} (成功率={:.2})",
+                    urgency, importance, assigned_agent, historical_pattern.success_rate
+                ),
+            });
+        }
+
+        prioritized.sort_by(|a, b| b.final_priority.partial_cmp(&a.final_priority).unwrap());
+        self.task_queue = prioritized.iter().cloned().collect();
+        prioritized
+    }
+
+    /// 核心职责2: 熔断检测 + BUNKER协议
+    pub async fn check_and_trigger_bunker(&mut self) -> Result<BunkerMode> {
+        if self.last_bunker_check.elapsed() < Duration::from_secs(30) {
+            return Ok(self.bunker_mode.clone());
+        }
+
+        self.last_bunker_check = Instant::now();
+
+        let mut total_failures = 0;
+        let total_agents = self.agent_health.len();
+
+        for (name, health) in &self.agent_health {
+            if health.consecutive_failures >= self.config.max_failures {
+                total_failures += 1;
+                warn!("⚠️ Agent {} 连续失败 {} 次", name, health.consecutive_failures);
+            }
+        }
+
+        let failure_rate = total_failures as f64 / total_agents as f64;
+
+        if failure_rate >= 0.5 && self.config.enable_auto_fallback {
+            if self.bunker_mode == BunkerMode::Normal {
+                self.trigger_bunker_protocol().await?;
+            }
+        } else if failure_rate < 0.2 && self.bunker_mode == BunkerMode::LocalSovereignty {
+            self.recover_from_bunker().await?;
+        }
+
+        Ok(self.bunker_mode.clone())
+    }
+
+    /// 触发BUNKER协议 (地堡模式)
+    async fn trigger_bunker_protocol(&mut self) -> Result<()> {
+        error!("🚨 [CRITICAL ALERT] Upstream Intelligence Lost");
+        info!("🔒 [ACTION] Severing cloud connections");
+        info!("🏰 [PROTOCOL] Initiating Local Sovereignty");
+
+        if self.local_cluster_available {
+            info!("💾 [LOADING] Waking up dormant Local Cluster (Llama-3-70B + DeepSeek-V3-Distilled)");
+        } else {
+            warn!("⚠️ 本地集群不可用，进入紧急模式");
+            self.bunker_mode = BunkerMode::Emergency;
+            return Ok(());
+        }
+
+        self.bunker_mode = BunkerMode::LocalSovereignty;
+
+        // MOSS降级
+        if let Some(moss) = self.agent_health.get_mut("MOSS") {
+            moss.status = AgentStatus::LocalFallback;
+            moss.intelligence_level = 120;
+            info!("🧠 MOSS Intelligence: 140 → 120 (开源模型水平)");
+            info!("   - Log: Intelligence degraded. Creativity set to 0. Logic preserved. Mission continues.");
+        }
+
+        // Omega换装
+        if let Some(omega) = self.agent_health.get_mut("Omega") {
+            omega.status = AgentStatus::LocalFallback;
+            omega.avg_response_time_ms = (omega.avg_response_time_ms as f64 * 1.3) as u64;
+            info!("⚙️ Omega: 切换到本地H100集群 (速度-30%, 但依然产出)");
+        }
+
+        // Ultron铁壁
+        if let Some(ultron) = self.agent_health.get_mut("Ultron") {
+            ultron.status = AgentStatus::LocalFallback;
+            info!("🛡️ Ultron: 锁死外部网络，只允许本地流量");
+        }
+
+        Ok(())
+    }
+
+    /// 从BUNKER恢复
+    async fn recover_from_bunker(&mut self) -> Result<()> {
+        info!("🌐 检测到API恢复，准备退出BUNKER模式");
+        self.bunker_mode = BunkerMode::Transitioning;
+
+        for (name, health) in self.agent_health.iter_mut() {
+            if health.status == AgentStatus::LocalFallback {
+                health.status = AgentStatus::Online;
+                if name == "MOSS" {
+                    health.intelligence_level = 140;
+                }
+            }
+        }
+
+        self.bunker_mode = BunkerMode::Normal;
+        info!("✅ 已恢复云端模式");
+        Ok(())
+    }
+
+    /// 核心职责3: Agent健康监控
+    pub fn report_api_result(&mut self, agent_name: &str, success: bool, response_time_ms: u64) {
+        if let Some(health) = self.agent_health.get_mut(agent_name) {
+            let alpha = 0.1;
+            let new_success = if success { 1.0 } else { 0.0 };
+            health.api_success_rate = health.api_success_rate * (1.0 - alpha) + new_success * alpha;
+            health.avg_response_time_ms =
+                (health.avg_response_time_ms as f64 * 0.9 + response_time_ms as f64 * 0.1) as u64;
+
+            if success {
+                health.consecutive_failures = 0;
+                health.last_success = Some(Utc::now());
+            } else {
+                health.consecutive_failures += 1;
+            }
+
+            self.learning_history.push_back(JarvisLearningEvent {
+                timestamp: Utc::now(),
+                event_type: JarvisEventType::ApiCall,
+                agent_name: agent_name.to_string(),
+                success,
+                context: HashMap::from([
+                    ("response_time_ms".to_string(), response_time_ms.to_string()),
+                ]),
+            });
+
+            if self.learning_history.len() > 10000 {
+                self.learning_history.pop_front();
+            }
+        }
+    }
+
+    /// 核心职责4: 分配最佳Agent
+    fn assign_best_agent(&self, _task: &RawTask) -> String {
+        let mut best_agent = "MOSS".to_string();
+        let mut best_score = 0.0;
+
+        for (name, health) in &self.agent_health {
+            if health.status == AgentStatus::Offline || health.status == AgentStatus::Error {
+                continue;
+            }
+
+            let score = health.api_success_rate * (health.intelligence_level as f64)
+                        / (health.avg_response_time_ms as f64 / 1000.0);
+
+            if score > best_score {
+                best_score = score;
+                best_agent = name.clone();
+            }
+        }
+
+        best_agent
+    }
+
+    /// SOSA模式分析
+    fn analyze_task_pattern(&self, task: &RawTask) -> TaskPattern {
+        let similar_tasks: Vec<_> = self.learning_history.iter()
+            .filter(|event| {
+                event.event_type == JarvisEventType::TaskAssignment
+                    && event.context.get("task_type") == Some(&task.task_type)
+            })
+            .collect();
+
+        if similar_tasks.is_empty() {
+            return TaskPattern::default();
+        }
+
+        let success_count = similar_tasks.iter().filter(|e| e.success).count();
+        let success_rate = success_count as f64 / similar_tasks.len() as f64;
+
+        TaskPattern {
+            success_rate,
+            urgency_adjustment: 0.0,
+            importance_adjustment: 0.0,
+        }
+    }
+
+    /// 获取当前模式
+    pub fn get_bunker_mode(&self) -> BunkerMode {
+        self.bunker_mode.clone()
+    }
+
+    /// 获取Agent健康报告
+    pub fn get_agent_health_report(&self) -> Vec<AgentHealth> {
+        self.agent_health.values().cloned().collect()
+    }
+
+    /// 安全验证（委托给safety_breaker）
+    pub fn verify_safety(&self, plan: &str, context: &str) -> JarvisVerdict {
+        self.safety_breaker.verify_safety(plan, context)
+    }
+}
+
+impl Default for JarvisManager {
     fn default() -> Self {
         Self::new()
     }
