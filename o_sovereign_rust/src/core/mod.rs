@@ -3,8 +3,10 @@
 pub mod addressing_system;
 pub mod aegis;
 pub mod agent_extension;
+pub mod agent_state;
 pub mod aipc_controller;
 pub mod api_manager;
+pub mod audit_log;
 pub mod auth_system;
 pub mod auto_takeover;
 pub mod behavior_monitor;
@@ -23,14 +25,17 @@ pub mod http_server;
 pub mod i18n;
 pub mod image_generator;
 pub mod jarvis;
+pub mod lsp_server;
 pub mod mcp_server;
 pub mod metrics;
 pub mod multimodal;
 pub mod opencode;
 pub mod opencode_connector;
 pub mod personal_rules;
+pub mod prompt_manager;
 pub mod protocol;
 pub mod providers;
+pub mod rag_engine;
 pub mod rate_limiter;
 pub mod router;
 pub mod shadow_mode;
@@ -49,8 +54,10 @@ pub use agent_extension::{
     AgentApiConfig, AgentCallRecord, AgentExtensionManager, AgentInfo, AgentList, AgentMetrics,
     AgentType, CustomAgent, DiminishingReturns, Recommendation,
 };
+pub use agent_state::{AgentStateConfig, AgentStateManager, LongTermMemory, Message, SessionState, StateSnapshot, UserPreference};
 pub use aipc_controller::{AipcController, HardwareCommand, HardwareStatus, HardwareType};
 pub use api_manager::{ApiCallRecord, ApiKeyConfig, ApiManager, ApiProvider, ProviderStats};
+pub use audit_log::{AuditEvent, AuditEventType, AuditLogger, AuditLogConfig, AuditQuery, AuditSeverity, ComplianceReport};
 pub use auth_system::{AuthConfig, AuthManager, Claims, SessionInfo, TokenPair};
 pub use auto_takeover::{AutoTakeoverEngine, TakeoverAction, TakeoverPolicy, TakeoverResult, TakeoverStats};
 pub use behavior_monitor::{
@@ -76,6 +83,7 @@ pub use http_server::{ApiResponse, HttpServer, HttpServerConfig, ServerState};
 pub use i18n::{I18n, Language, TranslationKey};
 pub use image_generator::{GenerationConfig, ImageGenerator};
 pub use jarvis::{DangerousOp, JarvisCircuitBreaker, JarvisVerdict};
+pub use lsp_server::{AcsaLspServer, CompletionItem, CompletionItemKind, Diagnostic as LspDiagnostic, DiagnosticSeverity, Document as LspDocument, LspServerConfig, Position, Range};
 pub use mcp_server::{
     AcsaMcpServer, ClientInfo, McpPrompt, McpRequest, McpResource, McpResponse, McpTool,
     McpToolHandler, create_acsa_mcp_server,
@@ -87,8 +95,10 @@ pub use opencode_connector::{
     CodeStats, ExecutionReceipt, MissionPack, OpenCodeConfig, OpenCodeConnector, TestResults,
 };
 pub use personal_rules::{PersonalRule, PersonalRulesManager, RuleConflict, RuleType, RulesStats};
+pub use prompt_manager::{AbTestGroup, AbTestMetrics, FewShotExample, PromptBuildOptions, PromptManager, PromptManagerConfig, PromptTemplate};
 pub use protocol::{AgentWeights, Protocol, ProtocolConfig, ProtocolManager};
 pub use providers::{create_provider, ModelProvider};
+pub use rag_engine::{ChunkingStrategy, Document as RagDocument, DocumentChunk, EmbeddingModel, RagConfig, RagEngine, RagStats, RetrievalMode, RetrievalResult};
 pub use rate_limiter::{RateLimitLevel, RateLimitRecord, RateLimitResult, RateLimitRule, RateLimitStrategy, RateLimiter, RateLimiterConfig};
 pub use router::ACSARouter;
 pub use shadow_mode::{AccessAudit, MaskingConfig, MaskingStrategy, MaskedData, PiiDetection, PiiType, ShadowModeConfig, ShadowModeEngine};

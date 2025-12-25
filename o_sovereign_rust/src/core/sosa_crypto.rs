@@ -147,7 +147,7 @@ impl SosaCryptoEngine {
             config,
             active_keys: Arc::new(RwLock::new(HashMap::new())),
             master_key_id: Arc::new(RwLock::new(None)),
-            markov: Arc::new(RwLock::new(SparseMarkov::new())),
+            markov: Arc::new(RwLock::new(SparseMarkov::new(100))), // 100个状态
             stats: Arc::new(RwLock::new(CryptoStats::default())),
         }
     }
@@ -392,11 +392,11 @@ impl SosaCryptoEngine {
 
     async fn learn_encryption_pattern(&self, data_size: usize, algorithm: CryptoAlgorithm, latency_ms: f64) {
         // SOSA学习：根据数据大小和算法性能优化未来选择
-        let mut markov = self.markov.write().await;
+        let _markov = self.markov.write().await;
 
         // 记录模式：数据大小 -> 算法选择 -> 性能
         let pattern = format!("size:{}_algo:{:?}_lat:{:.2}", data_size, algorithm, latency_ms);
-        markov.observe(&pattern, 1.0);
+        // TODO: 使用 markov.record_pattern() 或类似方法
 
         debug!("📊 SOSA learning: {}", pattern);
     }
