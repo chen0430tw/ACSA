@@ -8,8 +8,10 @@ pub mod behavior_monitor;
 pub mod cache_manager;
 pub mod claude;
 pub mod cognitive_cleaner;
+pub mod concurrency;
 pub mod data_security;
 pub mod deepseek;
+pub mod emergency_log;
 pub mod error;
 pub mod gemini;
 pub mod i18n;
@@ -25,6 +27,7 @@ pub mod router;
 pub mod sosa_api_pool;
 pub mod sosa_learning;
 pub mod task_tracker;
+pub mod terminal_server;
 pub mod types;
 
 pub use aegis::{AegisModule, DefenseDocType, DefenseDocument};
@@ -46,7 +49,9 @@ pub use data_security::{
     SecureImageContent, SensitivityLevel, JARVIS_EXPLANATION,
 };
 pub use cognitive_cleaner::{ChunkTag, CleanedIntent, CognitiveCleaner, SemanticChunk};
+pub use concurrency::{AsyncTask, ConcurrencyConfig, ConcurrencyManager, DistributedLock, TaskPriority as ConcurrentTaskPriority, TaskResult};
 pub use deepseek::DeepSeekProvider;
+pub use emergency_log::{EmergencyLogConfig, EmergencyLogger, LogEntry, LogEntryType};
 pub use error::{AcsaError, AcsaResult, ErrorCode, ErrorSeverity};
 pub use gemini::GeminiProvider;
 pub use i18n::{I18n, Language, TranslationKey};
@@ -72,4 +77,5 @@ pub use sosa_learning::{
     EventOutcome, KnowledgeNode, LearningConfig, LearningEvent, LearningSummary, SosaLearningEngine,
 };
 pub use task_tracker::{Task, TaskPriority, TaskStatus, TaskTracker};
+pub use terminal_server::{ClientConnection, DefaultHandler, MessageHandler, ServerConfig, TerminalServer, WsMessage};
 pub use types::*;
