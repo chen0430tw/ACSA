@@ -177,8 +177,8 @@ impl Default for BinaryTwin {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SparseMarkov {
     num_states: usize,
-    transitions: HashMap<(u32, u32), f64>, // (from_state, to_state) -> count
-    state_counts: HashMap<u32, f64>,
+    pub transitions: HashMap<(u32, u32), f64>, // (from_state, to_state) -> count
+    pub state_counts: HashMap<u32, f64>,
 }
 
 impl SparseMarkov {
