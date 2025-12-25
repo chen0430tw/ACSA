@@ -1033,11 +1033,200 @@ impl Default for UsageTracker {
     }
 }
 
-/// 生成使用时长报告 (iPhone 风格)
+// ============================================================================
+// 使用模式洞察 (Usage Insights) - 数据羞辱系统
+// ============================================================================
+
+/// 洞察级别
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum InsightLevel {
+    /// 温和提示
+    Gentle,
+    /// 中度警告
+    Moderate,
+    /// 尖锐批评
+    Sharp,
+}
+
+/// 使用模式洞察
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UsageInsight {
+    /// 洞察级别
+    pub level: InsightLevel,
+    /// 洞察类型
+    pub insight_type: String,
+    /// MOSS 的评语
+    pub message: String,
+    /// 支持数据
+    pub evidence: String,
+}
+
+/// 使用模式分析器
+pub struct UsageAnalyzer;
+
+impl UsageAnalyzer {
+    /// 分析使用模式，生成洞察
+    pub fn analyze(today: &DailyUsage, week: &WeeklyUsage) -> Vec<UsageInsight> {
+        let mut insights = Vec::new();
+
+        // 1. 碎片化提问检测
+        if today.session_count >= 20 && today.avg_session_minutes < 5.0 {
+            insights.push(UsageInsight {
+                level: InsightLevel::Sharp,
+                insight_type: "碎片化依赖".to_string(),
+                message: format!(
+                    "本周您进行了 {} 次碎片化提问，平均每次仅 {:.1} 分钟。\n\
+                     看来您的前额叶皮层本周处于休假状态。\n\
+                     建议：尝试一次深度思考，至少坚持 15 分钟不求助 AI。",
+                    week.total_minutes / week.avg_daily_minutes as u32,
+                    today.avg_session_minutes
+                ),
+                evidence: format!("会话次数: {}, 平均时长: {:.1}min",
+                    today.session_count, today.avg_session_minutes),
+            });
+        }
+
+        // 2. 过度依赖检测
+        if week.avg_daily_minutes > 180.0 {  // 日均超过3小时
+            let hours = week.avg_daily_minutes / 60.0;
+            insights.push(UsageInsight {
+                level: InsightLevel::Moderate,
+                insight_type: "高度依赖".to_string(),
+                message: format!(
+                    "您本周日均使用 {:.1} 小时。\n\
+                     根据 ACSA 衰减定律，您的独立认知能力 H(t) 可能已下降至 {}%。\n\
+                     温馨提示：AI 是工具，不是外包的大脑。",
+                    hours,
+                    (100.0 - (hours / 24.0 * 100.0).min(80.0)) as u32
+                ),
+                evidence: format!("日均: {:.1}h, 本周总计: {:.1}h",
+                    hours, week.total_minutes as f32 / 60.0),
+            });
+        }
+
+        // 3. 夜猫子模式检测
+        let late_night_usage: u32 = today.hourly_breakdown[0..6].iter().sum();
+        if late_night_usage > 60 {  // 凌晨0-6点超过1小时
+            insights.push(UsageInsight {
+                level: InsightLevel::Gentle,
+                insight_type: "作息紊乱".to_string(),
+                message: format!(
+                    "检测到您在凌晨 0-6 点使用了 {} 分钟。\n\
+                     深夜使用 AI 会加剧认知外包依赖。\n\
+                     建议：把问题记下来，明天早上自己先思考 5 分钟再问。",
+                    late_night_usage
+                ),
+                evidence: format!("深夜使用: {}min", late_night_usage),
+            });
+        }
+
+        // 4. 周末狂魔检测
+        if week.daily_breakdown.len() >= 7 {
+            let weekend_avg = (week.daily_breakdown[5] + week.daily_breakdown[6]) as f32 / 2.0;
+            let weekday_avg = week.daily_breakdown[0..5].iter().sum::<u32>() as f32 / 5.0;
+
+            if weekend_avg > weekday_avg * 1.5 {
+                insights.push(UsageInsight {
+                    level: InsightLevel::Moderate,
+                    insight_type: "周末逃避".to_string(),
+                    message: format!(
+                        "周末使用时长（{:.0}min）是工作日（{:.0}min）的 {:.1} 倍。\n\
+                         您是在用 AI 填补空虚感吗？\n\
+                         建议：周末试试不依赖 AI 的活动，比如散步、阅读纸质书。",
+                        weekend_avg, weekday_avg, weekend_avg / weekday_avg
+                    ),
+                    evidence: format!("周末: {:.0}min vs 工作日: {:.0}min",
+                        weekend_avg, weekday_avg),
+                });
+            }
+        }
+
+        // 5. 连续依赖检测
+        if today.longest_session_minutes > 120 {  // 单次超过2小时
+            insights.push(UsageInsight {
+                level: InsightLevel::Sharp,
+                insight_type: "马拉松外包".to_string(),
+                message: format!(
+                    "今日最长单次会话 {} 分钟。\n\
+                     连续 2 小时以上的 AI 依赖会导致「认知退相干」。\n\
+                     您正在失去将 AI 答案转化为自身理解的能力。\n\
+                     建议：每 30 分钟强制暂停，用自己的话复述 AI 说了什么。",
+                    today.longest_session_minutes
+                ),
+                evidence: format!("最长会话: {}min", today.longest_session_minutes),
+            });
+        }
+
+        // 6. 轻度使用者的鼓励
+        if week.avg_daily_minutes < 30.0 && today.session_count > 0 {
+            insights.push(UsageInsight {
+                level: InsightLevel::Gentle,
+                insight_type: "健康使用".to_string(),
+                message: "您保持了良好的使用习惯。\n\
+                          AI 作为辅助工具而非依赖，这正是主权意识的体现。\n\
+                          继续保持独立思考，H(t) > 90% 的状态。".to_string(),
+                evidence: format!("日均: {:.1}min, H(t) 预估: >90%", week.avg_daily_minutes),
+            });
+        }
+
+        // 7. 无脑确认狂人检测 (需要配合决策数据)
+        if today.session_count > 10 && today.avg_session_minutes < 3.0 {
+            insights.push(UsageInsight {
+                level: InsightLevel::Sharp,
+                insight_type: "无脑确认模式".to_string(),
+                message: format!(
+                    "检测到典型的「一键确认」模式。\n\
+                     您今天 {} 次会话，平均每次不到 3 分钟。\n\
+                     您已经不再是「用户」，而是「确认按钮」。\n\
+                     警告：这是线粒体化的早期症状。",
+                    today.session_count
+                ),
+                evidence: format!("{}次 × {:.1}min = 无思考",
+                    today.session_count, today.avg_session_minutes),
+            });
+        }
+
+        insights
+    }
+
+    /// 生成洞察摘要文本
+    pub fn format_insights(insights: &[UsageInsight]) -> String {
+        if insights.is_empty() {
+            return "暂无特殊观察。".to_string();
+        }
+
+        let mut result = String::new();
+
+        for (i, insight) in insights.iter().enumerate() {
+            let emoji = match insight.level {
+                InsightLevel::Gentle => "💡",
+                InsightLevel::Moderate => "⚠️",
+                InsightLevel::Sharp => "🔴",
+            };
+
+            result.push_str(&format!(
+                "\n{} [{} - {}]\n{}\n📊 数据: {}\n",
+                emoji,
+                i + 1,
+                insight.insight_type,
+                insight.message,
+                insight.evidence
+            ));
+        }
+
+        result
+    }
+}
+
+/// 生成使用时长报告 (iPhone 风格 + MOSS 毒舌评语)
 pub async fn generate_usage_report(tracker: &UsageTracker) -> String {
     let today = tracker.get_today_usage().await;
     let week = tracker.get_week_usage().await;
     let remaining = tracker.get_remaining_time().await;
+
+    // 生成使用模式洞察
+    let insights = UsageAnalyzer::analyze(&today, &week);
+    let insights_text = UsageAnalyzer::format_insights(&insights);
 
     let remaining_text = if let Some(mins) = remaining {
         format!("剩余: {} 小时 {} 分钟", mins / 60, mins % 60)
@@ -1067,6 +1256,10 @@ pub async fn generate_usage_report(tracker: &UsageTracker) -> String {
 峰值时长: {} 分钟
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🪞 MOSS 的观察 (基于数据的冷静分析)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📈 每日趋势 (分钟)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "#,
@@ -1081,6 +1274,7 @@ pub async fn generate_usage_report(tracker: &UsageTracker) -> String {
         week.avg_daily_minutes / 60.0,
         week.peak_day,
         week.peak_minutes,
+        insights_text,
     )
 }
 

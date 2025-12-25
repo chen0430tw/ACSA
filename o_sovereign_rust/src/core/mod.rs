@@ -113,9 +113,9 @@ pub use router::ACSARouter;
 pub use shadow_mode::{AccessAudit, MaskingConfig, MaskingStrategy, MaskedData, PiiDetection, PiiType, ShadowModeConfig, ShadowModeEngine};
 pub use sovereignty::{
     AntiAddictionConfig, BioActivity, ChartDataPoint, CircuitBreakerConfig, DailyUsage,
-    DecisionEvent, DecisionType, DoseMeter, DoseStats, ExecCircuitBreaker, RiskLevel,
-    SovereigntyConfig, SovereigntySystem, UsageSession, UsageTracker, WeeklyUsage, SOVEREIGNTY,
-    generate_bio_activity_report, generate_usage_report,
+    DecisionEvent, DecisionType, DoseMeter, DoseStats, ExecCircuitBreaker, InsightLevel,
+    RiskLevel, SovereigntyConfig, SovereigntySystem, UsageAnalyzer, UsageInsight, UsageSession,
+    UsageTracker, WeeklyUsage, SOVEREIGNTY, generate_bio_activity_report, generate_usage_report,
 };
 pub use sosa_api_pool::{
     ApiCallEvent, ApiEndpoint, ApiErrorType, ApiProviderType, Attractor, BinaryTwin,
