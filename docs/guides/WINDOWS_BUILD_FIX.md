@@ -508,5 +508,5 @@ C 家族编译非常吃：
 ---
 
 **最后更新：** 2025-12-26
-**适用版本：** ACSA 0.1.0, Dioxus 0.5
+**适用版本：** ACSA 0.1.0, Dioxus 0.7, Ratatui 0.29
 **测试环境：** Windows 11 Pro, Visual Studio 2022 Build Tools
