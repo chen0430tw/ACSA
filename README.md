@@ -29,9 +29,17 @@ cd ACSA
 git clone https://github.com/chen0430tw/ACSA.git
 cd ACSA
 
+# 如果遇到执行策略错误，先运行此命令（临时允许）
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+
 # 一键启动
 .\quick-start.ps1
 ```
+
+> **💡 PowerShell 执行策略说明**:
+> - **临时允许**（推荐）: `Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process`
+> - **永久允许**（需管理员）: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+> - **详细说明**: 见 [about_Execution_Policies](https://docs.microsoft.com/powershell/module/microsoft.powershell.core/about/about_execution_policies)
 
 **方法2 - 命令提示符:**
 ```cmd
