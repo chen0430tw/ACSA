@@ -25,6 +25,12 @@ fn App() -> Element {
     let mut is_processing = use_signal(|| false);
     let mut use_mock = use_signal(|| true);
     let mut risk_threshold = use_signal(|| 70u8);
+    let mut show_settings = use_signal(|| false);
+    let mut language = use_signal(|| "zh-CN".to_string());
+
+    // API key states (not persisted, just for UI demo)
+    let mut api_key_openai = use_signal(|| String::new());
+    let mut api_key_deepseek = use_signal(|| String::new());
 
     // Handler for execute button
     let on_execute = move |_| {
@@ -58,6 +64,18 @@ fn App() -> Element {
                 p { class: "subtitle",
                     "Adversarially-Constrained Sycophantic Agent"
                 }
+
+                // Language Switcher
+                div { class: "language-switcher",
+                    select {
+                        value: language(),
+                        onchange: move |e| language.set(e.value()),
+                        option { value: "zh-CN", "🇨🇳 简体中文" }
+                        option { value: "en-US", "🇺🇸 English" }
+                        option { value: "ja-JP", "🇯🇵 日本語" }
+                        option { value: "ko-KR", "🇰🇷 한국어" }
+                    }
+                }
             }
 
             // Agent Status Bar
@@ -68,27 +86,98 @@ fn App() -> Element {
                 AgentStatusBadge { role: AgentRole::Omega, status: "Idle" }
             }
 
-            // Settings Panel
-            div { class: "settings-panel",
-                label {
-                    input {
-                        r#type: "checkbox",
-                        checked: use_mock(),
-                        onchange: move |e| use_mock.set(e.value().parse().unwrap_or(false))
-                    }
-                    " Use Mock Mode (no API keys required)"
+            // Mock Mode Warning Banner
+            if use_mock() {
+                div { class: "mock-warning-banner",
+                    "⚠️ MOCK MODE ACTIVE - 这不是真实AI！响应是硬编码的测试数据（只回显输入）"
+                    br {}
+                    "💡 要使用真实AI，请在下方配置API密钥并取消勾选Mock模式"
+                }
+            }
+
+            // Settings Panel with Toggle
+            div { class: "settings-section",
+                button {
+                    class: "settings-toggle-btn",
+                    onclick: move |_| show_settings.set(!show_settings()),
+                    if show_settings() { "▼ 隐藏设置" } else { "▶ 显示设置" }
                 }
 
-                label {
-                    "Risk Threshold: {risk_threshold()}"
-                    input {
-                        r#type: "range",
-                        min: 0,
-                        max: 100,
-                        value: risk_threshold(),
-                        oninput: move |e| {
-                            if let Ok(val) = e.value().parse::<u8>() {
-                                risk_threshold.set(val);
+                if show_settings() {
+                    div { class: "settings-panel-expanded",
+                        // API Configuration
+                        div { class: "api-config-section",
+                            h4 { "🔑 API 配置" }
+                            p { class: "config-hint",
+                                "注意：当前UI不保存密钥。生产环境请使用 .env 文件配置！"
+                            }
+
+                            label {
+                                "OpenAI API Key:"
+                                input {
+                                    r#type: "password",
+                                    placeholder: "sk-...",
+                                    value: api_key_openai(),
+                                    oninput: move |e| api_key_openai.set(e.value())
+                                }
+                            }
+
+                            label {
+                                "DeepSeek API Key (推荐国内用户):"
+                                input {
+                                    r#type: "password",
+                                    placeholder: "sk-...",
+                                    value: api_key_deepseek(),
+                                    oninput: move |e| api_key_deepseek.set(e.value())
+                                }
+                            }
+
+                            a {
+                                class: "help-link",
+                                href: "https://github.com/chen0430tw/ACSA/blob/main/docs/guides/GETTING_STARTED.md#第三步配置真实-api可选",
+                                target: "_blank",
+                                "📘 查看完整API配置指南"
+                            }
+                        }
+
+                        // Runtime Settings
+                        div { class: "runtime-settings",
+                            h4 { "⚙️ 运行时设置" }
+
+                            label { class: "checkbox-label",
+                                input {
+                                    r#type: "checkbox",
+                                    checked: use_mock(),
+                                    onchange: move |e| use_mock.set(e.value().parse().unwrap_or(false))
+                                }
+                                span { class: "checkbox-text",
+                                    " Use Mock Mode "
+                                    span { class: "badge-mock", "免费测试" }
+                                }
+                            }
+
+                            label {
+                                "Risk Threshold: {risk_threshold()}"
+                                input {
+                                    r#type: "range",
+                                    min: 0,
+                                    max: 100,
+                                    value: risk_threshold(),
+                                    oninput: move |e| {
+                                        if let Ok(val) = e.value().parse::<u8>() {
+                                            risk_threshold.set(val);
+                                        }
+                                    }
+                                }
+                                span { class: "threshold-hint",
+                                    if risk_threshold() < 30 {
+                                        " (宽松 - 允许更多操作)"
+                                    } else if risk_threshold() > 70 {
+                                        " (严格 - Jarvis更容易阻止)"
+                                    } else {
+                                        " (平衡)"
+                                    }
+                                }
                             }
                         }
                     }
