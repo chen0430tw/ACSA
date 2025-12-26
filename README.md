@@ -168,6 +168,42 @@ Redis分布式锁、服务发现和集群管理。
 - **Rate Limiter**：多层级速率限制（Global/IP/User/Endpoint）
 - **Metrics Collector**：Prometheus指标导出
 
+### 🔌 协议支持
+
+#### **MCP (Model Context Protocol)**
+标准化的AI应用与外部工具集成协议（Anthropic/Linux Foundation）
+
+- ✅ **协议版本**: 2025-11-25 (最新规范)
+- ✅ **支持能力**: Tools, Resources, Prompts
+- ✅ **平台集成**: Google, GitHub, Slack, Notion, 网盘服务等
+- 📖 **详细文档**: [MCP 集成指南](docs/guides/MCP_INTEGRATION_GUIDE.md)
+
+**快速示例**:
+```rust
+// 注册 GitHub 工具到 MCP 服务器
+let github_tool = McpTool {
+    name: "github".to_string(),
+    description: "GitHub operations".to_string(),
+    input_schema: json!({/* ... */}),
+};
+mcp_server.register_tool(github_tool, GitHubHandler::new()).await;
+```
+
+#### **LSP (Language Server Protocol)**
+智能代码补全与诊断服务器
+
+- ✅ **功能**: 代码补全、诊断、定义跳转、悬停提示
+- ✅ **编辑器**: VS Code, Neovim, Emacs, Vim, Sublime Text
+- ✅ **文件类型**: Rust, TOML (ACSA 配置文件)
+- 📖 **详细文档**: [LSP 服务器指南](docs/guides/LSP_SERVER_GUIDE.md)
+
+**编辑器配置示例** (VS Code):
+```json
+{
+  "acsa.lsp.serverPath": "/path/to/acsa-lsp-server"
+}
+```
+
 > **⚠️ 设计限制**: MOSS (战略规划Agent) 被永久禁止参与UI/审美决策。原因：在另一个平行世界，Master曾尝试让MOSS设计界面，结果得到了一个充满闪烁GIF、自动播放音乐和"恭喜中奖"弹窗的"澳门线上赌场"风格悲剧。从那以后，UI设计由人类负责。MOSS擅长逻辑和战略，但审美...还是算了吧。
 
 ---

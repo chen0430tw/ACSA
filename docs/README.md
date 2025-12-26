@@ -8,6 +8,8 @@
   - `COGNITIVE_CLEANER_GUIDE.md` - 认知清洗器使用指南
   - `DICTIONARY_FORMAT.md` - 词典格式说明
   - `LEGAL_DISCLAIMER.md` - 法律免责声明
+  - `MCP_INTEGRATION_GUIDE.md` - MCP (Model Context Protocol) 集成指南 ⭐ 新增
+  - `LSP_SERVER_GUIDE.md` - LSP (Language Server Protocol) 服务器指南 ⭐ 新增
 
 - **drafts/** - 草稿和历史文档
   - `ACSA原理.txt` - ACSA原理说明（草稿）
