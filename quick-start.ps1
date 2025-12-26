@@ -157,36 +157,44 @@ Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host "   ACSA 启动选项" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "1) 运行 CLI 模式 (推荐)"
-Write-Host "2) 运行测试"
-Write-Host "3) 生成文档"
-Write-Host "4) 退出"
+Write-Host "1) 运行 TUI 模式 (Terminal UI - 推荐)"
+Write-Host "2) 运行 Desktop 模式 (图形界面)"
+Write-Host "3) 运行测试"
+Write-Host "4) 生成文档"
+Write-Host "5) 退出"
 Write-Host ""
-$choice = Read-Host "请选择 (1-4)"
+$choice = Read-Host "请选择 (1-5)"
 
 switch ($choice) {
     "1" {
         Write-Host ""
-        Write-Success "启动 CLI 模式..."
+        Write-Success "启动 TUI 模式..."
         Write-Host ""
-        cargo run --release --bin o-sovereign-cli
+        cargo run --release --bin o-sovereign-tui --features ui
         break
     }
     "2" {
+        Write-Host ""
+        Write-Success "启动 Desktop 模式..."
+        Write-Host ""
+        cargo run --release --bin o-sovereign-desktop --features ui
+        break
+    }
+    "3" {
         Write-Host ""
         Write-Success "运行测试..."
         Write-Host ""
         cargo test
         break
     }
-    "3" {
+    "4" {
         Write-Host ""
         Write-Success "生成文档..."
         Write-Host ""
         cargo doc --no-deps --open
         break
     }
-    "4" {
+    "5" {
         Write-Host ""
         Write-Success "退出"
         Set-Location ..
