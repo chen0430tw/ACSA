@@ -276,12 +276,33 @@ cargo run --bin o-sovereign-tui --features ui
 
 **⚠️ Windows 用户注意：**
 
-如果遇到 `dioxus` 相关编译错误，请确保：
-1. **使用默认构建**（不包含 UI）：`cargo build --release`
-2. **如需 UI 功能**，明确指定 feature：`cargo build --release --features ui`
-3. **安装 Visual Studio 2022 Build Tools**（含 C++ 工作负载）
+Windows 下编译 UI 版本需要额外依赖。**推荐使用以下方式之一：**
 
-详见：[Windows 编译报告](ACSA编译报告.txt)
+**方式 A：一键安装依赖（推荐）**
+```powershell
+# 使用 Chocolatey（管理员权限）
+choco install visualstudio2022-workload-vctools cmake -y
+
+# 然后构建 UI 版本
+cd o_sovereign_rust
+cargo build --release --features ui
+```
+
+**方式 B：手动安装**
+1. 安装 [Visual Studio 2022 Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
+   - 勾选 **"使用 C++ 的桌面开发"** 工作负载
+2. 安装 [CMake](https://cmake.org/download/)（勾选 Add to PATH）
+3. 重新打开 PowerShell，运行 `cargo build --release --features ui`
+
+**方式 C：使用 WSL2（开发推荐）**
+```powershell
+wsl --install -d Ubuntu-22.04
+# 然后在 WSL 内构建，避免 Windows 编译问题
+```
+
+**详细修复指南：** [Windows 编译修复完全指南](docs/guides/WINDOWS_BUILD_FIX.md) 📖
+
+**仅需命令行版本？** 使用 `cargo build --release` 即可，无需上述依赖。
 
 ### 基础配置
 
@@ -375,6 +396,7 @@ println!("{}", protected_text);
 ### 用户文档
 - [认知清洗系统使用指南](docs/guides/COGNITIVE_CLEANER_GUIDE.md) ✅
 - [字典文件格式说明](docs/guides/DICTIONARY_FORMAT.md) ✅
+- [**Windows 编译修复完全指南**](docs/guides/WINDOWS_BUILD_FIX.md) 🆕
 - [文档索引](docs/README.md) ✅
 
 ### 法律与合规
