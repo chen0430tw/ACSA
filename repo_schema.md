@@ -10,7 +10,8 @@
 ACSA/
 ├── README.md                          # 项目入口文档（含快速启动）
 ├── LICENSE                            # Apache 2.0 开源许可证
-├── ASCA疫苗.md                        # ⭐ 核心理念文档（必读）
+├── docs/
+│   ├── ASCA疫苗.md                    # ⭐ 核心理念文档（必读）
 ├── quick-start.sh                     # 一键启动脚本
 ├── repo_index.json                    # AI索引文件（本文档的JSON版）
 ├── repo_schema.md                     # 本文档
@@ -301,7 +302,7 @@ H(t) = H₀ · e^(-λ · N(t) · t)
 
 ### 自由之锁 (The Liberty Lock)
 **定义**: 用自由意志选择放弃自由意志的悖论
-**参考**: ASCA疫苗.md § 自由之锁
+**参考**: docs/ASCA疫苗.md § 自由之锁
 
 ---
 
@@ -355,7 +356,7 @@ cargo doc --no-deps --open
 1. **README.md** - 快速了解项目定位
 2. **repo_index.json** - 快速导航（JSON格式）
 3. **本文档** - 深入理解架构
-4. **ASCA疫苗.md** - 理解核心理念和哲学
+4. **docs/ASCA疫苗.md** - 理解核心理念和哲学
 5. **sovereignty.rs** - 阅读核心实现
 6. **docs/guides/** - 详细使用文档
 

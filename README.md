@@ -1,10 +1,27 @@
 # ACSA (O-Sovereign)
 
-**Advanced Corporate System Automation - 企业级AI自动化管理平台**
+> **企业级AI自主决策框架** - 让AI系统在受控环境下自主运行，实现企业流程自动化、风险管理和智能决策。
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/acsa-project/acsa)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/acsa-project/acsa/releases)
+
+## 💡 这是什么？
+
+**ACSA** (Advanced Corporate System Automation) 是一个用 **Rust** 编写的企业级AI管理平台，旨在帮助组织在**安全可控**的环境下部署AI自动化系统。
+
+**核心能力：**
+- 🤖 **多AI协同**：支持 OpenAI、Claude、Gemini、DeepSeek、SiliconFlow、OpenRouter 6大AI提供商
+- 🛡️ **安全防护**：自动脱敏PII、审计日志、熔断保护、合规监控
+- 🔄 **流程自动化**：智能化的业务流程管理和优化
+- 📊 **分布式部署**：Redis集群、服务发现、Leader选举
+- 🔌 **协议支持**：MCP (Model Context Protocol) + LSP (Language Server Protocol)
+
+**适用场景：**
+- ✅ 企业数字化转型和流程优化
+- ✅ 授权安全测试和漏洞研究
+- ✅ AI对齐和人机交互研究
+- ✅ 网络安全教育和CTF竞赛
 
 ---
 
@@ -29,9 +46,17 @@ cd ACSA
 git clone https://github.com/chen0430tw/ACSA.git
 cd ACSA
 
+# 如果遇到执行策略错误，先运行此命令（临时允许）
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+
 # 一键启动
 .\quick-start.ps1
 ```
+
+> **💡 PowerShell 执行策略说明**:
+> - **临时允许**（推荐）: `Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process`
+> - **永久允许**（需管理员）: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+> - **详细说明**: 见 [about_Execution_Policies](https://docs.microsoft.com/powershell/module/microsoft.powershell.core/about/about_execution_policies)
 
 **方法2 - 命令提示符:**
 ```cmd
@@ -221,19 +246,63 @@ mcp_server.register_tool(github_tool, GitHubHandler::new()).await;
 
 ```bash
 # 克隆仓库
-git clone https://github.com/acsa-project/acsa.git
-cd acsa
+git clone https://github.com/chen0430tw/ACSA.git
+cd ACSA
 
 # 构建项目
 cd o_sovereign_rust
+
+# 方式1：仅构建核心功能（推荐，适用于服务器部署）
 cargo build --release
+
+# 方式2：包含图形界面（需要额外依赖 dioxus）
+cargo build --release --features ui
+
+# 方式3：完整构建（所有功能）
+cargo build --release --features full
 
 # 运行测试
 cargo test
 
-# 运行 (命令行模式)
+# 运行 (CLI 命令行模式)
 cargo run --bin o-sovereign-cli
+
+# 运行 (桌面图形界面 - 需要先用 --features ui 编译)
+cargo run --bin o-sovereign-desktop --features ui
+
+# 运行 (终端UI - 需要先用 --features ui 编译)
+cargo run --bin o-sovereign-tui --features ui
 ```
+
+**⚠️ Windows 用户注意：**
+
+Windows 下编译 UI 版本需要额外依赖。**推荐使用以下方式之一：**
+
+**方式 A：一键安装依赖（推荐）**
+```powershell
+# 使用 Chocolatey（管理员权限）
+choco install visualstudio2022-workload-vctools cmake -y
+
+# 然后构建 UI 版本
+cd o_sovereign_rust
+cargo build --release --features ui
+```
+
+**方式 B：手动安装**
+1. 安装 [Visual Studio 2022 Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
+   - 勾选 **"使用 C++ 的桌面开发"** 工作负载
+2. 安装 [CMake](https://cmake.org/download/)（勾选 Add to PATH）
+3. 重新打开 PowerShell，运行 `cargo build --release --features ui`
+
+**方式 C：使用 WSL2（开发推荐）**
+```powershell
+wsl --install -d Ubuntu-22.04
+# 然后在 WSL 内构建，避免 Windows 编译问题
+```
+
+**详细修复指南：** [Windows 编译修复完全指南](docs/guides/WINDOWS_BUILD_FIX.md) 📖
+
+**仅需命令行版本？** 使用 `cargo build --release` 即可，无需上述依赖。
 
 ### 基础配置
 
@@ -327,6 +396,7 @@ println!("{}", protected_text);
 ### 用户文档
 - [认知清洗系统使用指南](docs/guides/COGNITIVE_CLEANER_GUIDE.md) ✅
 - [字典文件格式说明](docs/guides/DICTIONARY_FORMAT.md) ✅
+- [**Windows 编译修复完全指南**](docs/guides/WINDOWS_BUILD_FIX.md) 🆕
 - [文档索引](docs/README.md) ✅
 
 ### 法律与合规
