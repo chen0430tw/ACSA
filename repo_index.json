@@ -148,6 +148,49 @@
         "日本語 (ja-JP)",
         "한국어 (ko-KR)"
       ]
+    },
+
+    "ai_providers": {
+      "file": "o_sovereign_rust/src/core/providers.rs",
+      "description": "AI Provider 系统 - 多模型支持",
+      "supported_providers": {
+        "OpenAI": {
+          "file": "providers.rs",
+          "features": ["GPT-4/5", "业界标准"],
+          "default_role": "MOSS (战略规划)"
+        },
+        "Gemini": {
+          "file": "gemini.rs",
+          "features": ["多模态能力", "Google"],
+          "default_role": "L6 (物理验证)"
+        },
+        "Claude": {
+          "file": "claude.rs",
+          "features": ["Anthropic", "红队审计"],
+          "default_role": "Ultron (安全审计)"
+        },
+        "DeepSeek": {
+          "file": "deepseek.rs",
+          "features": ["代码生成专家", "90% 成本节省"],
+          "default_role": "Omega (执行层)"
+        },
+        "SiliconFlow": {
+          "file": "siliconflow.rs",
+          "features": ["硅基流动", "国内高速", "极致性价比"],
+          "default_role": "灵活",
+          "api_endpoint": "https://api.siliconflow.cn/v1"
+        },
+        "OpenRouter": {
+          "file": "openrouter.rs",
+          "features": ["统一路由", "100+ 模型", "自动降级"],
+          "default_role": "灵活",
+          "api_endpoint": "https://openrouter.ai/api/v1"
+        }
+      },
+      "factory_functions": [
+        "create_provider(role, api_key, use_mock)",
+        "create_provider_with_type(provider_type, role, api_key, model, app_name)"
+      ]
     }
   },
 

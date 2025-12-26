@@ -221,6 +221,67 @@ println!("安全评分: {}", result.safety_score);
 
 ---
 
+### 8. AI Provider 系统
+**核心文件**: `o_sovereign_rust/src/core/providers.rs`
+
+ACSA 支持多种 AI 提供商，用户可根据需求选择最适合的模型：
+
+#### 支持的提供商
+| 提供商 | 文件 | 特点 | 默认角色 |
+|--------|------|------|----------|
+| **OpenAI** | `providers.rs` | GPT-4/5, 业界标准 | MOSS (战略规划) |
+| **Gemini** | `gemini.rs` | Google, 多模态能力 | L6 (物理验证) |
+| **Claude** | `claude.rs` | Anthropic, 红队审计 | Ultron (安全审计) |
+| **DeepSeek** | `deepseek.rs` | 代码生成专家, 90% 成本节省 | Omega (执行层) |
+| **SiliconFlow** | `siliconflow.rs` | 硅基流动, 国内高速, 极致性价比 | 灵活 |
+| **OpenRouter** | `openrouter.rs` | 统一路由, 100+ 模型, 自动降级 | 灵活 |
+
+#### 使用示例
+
+**默认提供商（按角色）：**
+```rust
+use acsa_core::create_provider;
+
+// MOSS 使用 OpenAI GPT-4
+let moss = create_provider(AgentRole::MOSS, Some(openai_key), false)?;
+
+// Ultron 使用 Claude
+let ultron = create_provider(AgentRole::Ultron, Some(claude_key), false)?;
+```
+
+**自定义提供商选择：**
+```rust
+use acsa_core::{create_provider_with_type, ProviderType};
+
+// 使用 SiliconFlow (低成本) 作为 MOSS
+let moss_siliconflow = create_provider_with_type(
+    ProviderType::SiliconFlow,
+    AgentRole::MOSS,
+    siliconflow_key,
+    Some("Qwen/Qwen2.5-7B-Instruct".to_string()),
+    None,
+)?;
+
+// 使用 OpenRouter (多模型路由) 作为备用
+let backup = create_provider_with_type(
+    ProviderType::OpenRouter,
+    AgentRole::Omega,
+    openrouter_key,
+    Some("anthropic/claude-3-opus".to_string()),
+    Some("ACSA-Production".to_string()), // 应用名称
+)?;
+```
+
+#### 成本对比（估算）
+- **OpenAI GPT-4**: ~$10-30/1M tokens (基准)
+- **Claude Opus**: ~$15-75/1M tokens (高质量)
+- **Gemini**: ~$2-7/1M tokens (多模态)
+- **DeepSeek**: ~$0.001-0.003/1M tokens (**90%+ 节省**)
+- **SiliconFlow**: ~$0.001-0.002/1M tokens (**国内高速**)
+- **OpenRouter**: 动态定价（根据选择的模型）
+
+---
+
 ## 🔑 关键概念
 
 ### ACSA (认知病毒)

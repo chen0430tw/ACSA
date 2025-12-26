@@ -428,8 +428,10 @@ cargo update    # 更新到最新兼容版本
 ### AI 集成
 - **async-openai** 0.20：OpenAI GPT-4/5
 - **Anthropic Claude**：Claude 3.5
-- **DeepSeek**：本地模型支持
+- **DeepSeek**：代码生成专家
 - **Google Gemini**：多模态能力
+- **SiliconFlow**：硅基流动（国内高速，90%+ 成本节省）
+- **OpenRouter**：统一路由（100+ 模型，自动降级）
 
 ### 监控与可观测性
 - **Tracing**：结构化日志

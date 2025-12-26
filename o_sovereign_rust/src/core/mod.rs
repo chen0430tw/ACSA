@@ -33,6 +33,7 @@ pub mod metrics;
 pub mod multimodal;
 pub mod opencode;
 pub mod opencode_connector;
+pub mod openrouter;
 pub mod performance;
 pub mod personal_rules;
 pub mod plugin_system;
@@ -43,6 +44,7 @@ pub mod rag_engine;
 pub mod rate_limiter;
 pub mod router;
 pub mod shadow_mode;
+pub mod siliconflow;
 pub mod sovereignty;
 pub mod sosa_api_pool;
 pub mod sosa_crypto;
@@ -86,6 +88,7 @@ pub use emergency_log::{EmergencyLogConfig, EmergencyLogger, LogEntry, LogEntryT
 pub use event_bus::{Event, EventBus, EventBusConfig, EventHandler, EventType, LoggingEventHandler, MetricsEventHandler};
 pub use error::{AcsaError, AcsaResult, ErrorCode, ErrorSeverity};
 pub use gemini::GeminiProvider;
+pub use openrouter::OpenRouterProvider;
 pub use http_server::{ApiResponse, HttpServer, HttpServerConfig, ServerState};
 pub use i18n::{I18n, Language, TranslationKey};
 pub use image_generator::{GenerationConfig, ImageGenerator};
@@ -106,11 +109,12 @@ pub use personal_rules::{PersonalRule, PersonalRulesManager, RuleConflict, RuleT
 pub use plugin_system::{Plugin, PluginConfig, PluginHandler, PluginMetadata, PluginRequest, PluginResponse, PluginState, PluginStats, PluginSystem, PluginSystemConfig, PluginType, ResourceLimits};
 pub use prompt_manager::{AbTestGroup, AbTestMetrics, FewShotExample, PromptBuildOptions, PromptManager, PromptManagerConfig, PromptTemplate};
 pub use protocol::{AgentWeights, Protocol, ProtocolConfig, ProtocolManager};
-pub use providers::{create_provider, ModelProvider};
+pub use providers::{create_provider, create_provider_with_type, ModelProvider, ProviderType};
 pub use rag_engine::{ChunkingStrategy, Document as RagDocument, DocumentChunk, EmbeddingModel, RagConfig, RagEngine, RagStats, RetrievalMode, RetrievalResult};
 pub use rate_limiter::{RateLimitLevel, RateLimitRecord, RateLimitResult, RateLimitRule, RateLimitStrategy, RateLimiter, RateLimiterConfig};
 pub use router::ACSARouter;
 pub use shadow_mode::{AccessAudit, MaskingConfig, MaskingStrategy, MaskedData, PiiDetection, PiiType, ShadowModeConfig, ShadowModeEngine};
+pub use siliconflow::SiliconFlowProvider;
 pub use sovereignty::{
     AntiAddictionConfig, BioActivity, ChartDataPoint, CircuitBreakerConfig, DailyUsage,
     DecisionEvent, DecisionType, DoseMeter, DoseStats, ExecCircuitBreaker, InsightLevel,

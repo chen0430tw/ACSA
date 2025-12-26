@@ -288,7 +288,18 @@ impl ModelProvider for MockProvider {
     }
 }
 
-/// Provider factory
+/// Provider Type Enum
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProviderType {
+    OpenAI,
+    Gemini,
+    Claude,
+    DeepSeek,
+    SiliconFlow,
+    OpenRouter,
+}
+
+/// Provider factory (default providers per role)
 pub fn create_provider(
     role: AgentRole,
     api_key: Option<String>,
@@ -322,6 +333,56 @@ pub fn create_provider(
             let key = api_key.ok_or_else(|| anyhow!("DeepSeek API key required for Omega"))?;
             info!("Creating DeepSeek provider for Omega (90% cost reduction!)");
             Ok(Arc::new(super::deepseek::DeepSeekProvider::new(key, None)))
+        }
+    }
+}
+
+/// Provider factory with explicit provider type selection
+///
+/// This allows using alternative providers (e.g., SiliconFlow or OpenRouter)
+/// for any role, enabling cost optimization and fallback strategies.
+///
+/// # Arguments
+/// * `provider_type` - Which AI provider to use
+/// * `role` - Agent role (MOSS, L6, Ultron, Omega)
+/// * `api_key` - API key for the provider
+/// * `model` - Optional model name (uses provider default if None)
+/// * `app_name` - Optional app name (for OpenRouter only)
+pub fn create_provider_with_type(
+    provider_type: ProviderType,
+    role: AgentRole,
+    api_key: String,
+    model: Option<String>,
+    app_name: Option<String>,
+) -> Result<Arc<dyn ModelProvider>> {
+    match provider_type {
+        ProviderType::OpenAI => {
+            info!("Creating OpenAI provider for {:?}", role);
+            Ok(Arc::new(OpenAIProvider::new(api_key, model)))
+        }
+        ProviderType::Gemini => {
+            info!("Creating Gemini provider for {:?}", role);
+            Ok(Arc::new(super::gemini::GeminiProvider::new(api_key, model)))
+        }
+        ProviderType::Claude => {
+            info!("Creating Claude provider for {:?}", role);
+            Ok(Arc::new(super::claude::ClaudeProvider::new(api_key, model)))
+        }
+        ProviderType::DeepSeek => {
+            info!("Creating DeepSeek provider for {:?}", role);
+            Ok(Arc::new(super::deepseek::DeepSeekProvider::new(api_key, model)))
+        }
+        ProviderType::SiliconFlow => {
+            info!("Creating SiliconFlow provider for {:?}", role);
+            Ok(Arc::new(super::siliconflow::SiliconFlowProvider::new(
+                api_key, model, role,
+            )))
+        }
+        ProviderType::OpenRouter => {
+            info!("Creating OpenRouter provider for {:?}", role);
+            Ok(Arc::new(super::openrouter::OpenRouterProvider::new(
+                api_key, model, role, app_name,
+            )))
         }
     }
 }
