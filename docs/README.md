@@ -2,15 +2,31 @@
 
 本目录包含ACSA项目的所有文档。
 
+## 🚀 快速导航
+
+### 新手必读
+- **[新手入门指南](guides/GETTING_STARTED.md)** 📘 - 从零开始5分钟快速上手
+  - Mock 模式说明
+  - API 密钥配置
+  - 常见问题解决
+
+### 技术指南
+- **[MCP 集成指南](guides/MCP_INTEGRATION_GUIDE.md)** ⭐ - Model Context Protocol 接入说明
+- **[LSP 服务器指南](guides/LSP_SERVER_GUIDE.md)** ⭐ - Language Server Protocol 配置
+- **[Windows 编译指南](guides/WINDOWS_BUILD_FIX.md)** 🪟 - Windows 平台编译问题完全解决方案
+
+---
+
 ## 目录结构
 
 - **guides/** - 使用指南和技术文档
+  - `GETTING_STARTED.md` - 新手入门指南 🆕 首次使用必读
   - `COGNITIVE_CLEANER_GUIDE.md` - 认知清洗器使用指南
   - `DICTIONARY_FORMAT.md` - 词典格式说明
   - `LEGAL_DISCLAIMER.md` - 法律免责声明
-  - `MCP_INTEGRATION_GUIDE.md` - MCP (Model Context Protocol) 集成指南 ⭐ 新增
-  - `LSP_SERVER_GUIDE.md` - LSP (Language Server Protocol) 服务器指南 ⭐ 新增
-  - `WINDOWS_BUILD_FIX.md` - Windows 编译修复完全指南 🆕 新增
+  - `MCP_INTEGRATION_GUIDE.md` - MCP (Model Context Protocol) 集成指南 ⭐
+  - `LSP_SERVER_GUIDE.md` - LSP (Language Server Protocol) 服务器指南 ⭐
+  - `WINDOWS_BUILD_FIX.md` - Windows 编译修复完全指南 🪟
 
 - **drafts/** - 草稿和历史文档
   - `ACSA原理.txt` - ACSA原理说明（草稿）

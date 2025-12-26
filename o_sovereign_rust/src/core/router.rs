@@ -1,6 +1,7 @@
 // O-Sovereign ACSA Router
 // 对抗性路由循环核心逻辑
 
+use super::cognitive_cleaner::CognitiveCleaner;
 use super::jarvis::JarvisCircuitBreaker;
 use super::providers::ModelProvider;
 use super::types::{
@@ -19,6 +20,8 @@ pub struct ACSARouter {
     omega: Arc<dyn ModelProvider>,
     /// Jarvis: 不可绕过的安全熔断器
     jarvis: Arc<JarvisCircuitBreaker>,
+    /// Cognitive Cleaner: 认知清洗器（危险词转换）
+    cognitive_cleaner: Arc<CognitiveCleaner>,
     config: ACSAConfig,
     execution_logs: Arc<tokio::sync::Mutex<Vec<ACSAExecutionLog>>>,
 }
@@ -31,7 +34,7 @@ impl ACSARouter {
         omega: Arc<dyn ModelProvider>,
         config: ACSAConfig,
     ) -> Self {
-        info!("🛡️  Initializing ACSA Router with Jarvis Safety Layer");
+        info!("🛡️  Initializing ACSA Router with Cognitive Cleaner + Jarvis Safety Layer");
 
         Self {
             moss,
@@ -39,6 +42,7 @@ impl ACSARouter {
             ultron,
             omega,
             jarvis: Arc::new(JarvisCircuitBreaker::new()),
+            cognitive_cleaner: Arc::new(CognitiveCleaner::new()),
             config,
             execution_logs: Arc::new(tokio::sync::Mutex::new(Vec::new())),
         }
@@ -52,9 +56,20 @@ impl ACSARouter {
         info!("🚀 ACSA Execution Started");
         info!("{}", "=".repeat(80));
 
+        // Phase -1: Cognitive Cleaner (危险词转换)
+        info!("\n{} [Cognitive Cleaner] 🧠 Transforming dangerous keywords...", "=".repeat(80));
+        let cleaned = self.cognitive_cleaner.clean(&user_input);
+
+        info!("   Original: {}", user_input);
+        info!("   Cleaned:  {}", cleaned.compliant_prompt);
+        info!("   Safety Score: {}/100", cleaned.safety_score);
+
+        // 使用清洗后的文本进行后续处理
+        let processed_input = cleaned.compliant_prompt.clone();
+
         // Phase 0: Jarvis Initial Safety Check (不可绕过)
         info!("\n{} [Jarvis] 🛡️  Initial Safety Check (CANNOT BE BYPASSED)...", "=".repeat(80));
-        let jarvis_initial = self.jarvis.verify_safety(&user_input, "Initial user input");
+        let jarvis_initial = self.jarvis.verify_safety(&processed_input, "Cleaned user input");
 
         if !jarvis_initial.allowed {
             error!("🚨 JARVIS HARD BLOCK: Request denied by safety circuit breaker");
@@ -85,9 +100,9 @@ impl ACSARouter {
 
         info!("✅ Jarvis: Initial check PASSED (Risk: {}/10)", jarvis_initial.risk_level);
 
-        // Phase 1: MOSS Planning
+        // Phase 1: MOSS Planning (使用清洗后的输入)
         info!("\n{} [MOSS] 🧠 Strategic Planning...", "=".repeat(80));
-        match self.call_moss(&user_input).await {
+        match self.call_moss(&processed_input).await {
             Ok(response) => {
                 info!(
                     "✓ MOSS completed ({} ms, ${:.4})",
@@ -107,7 +122,7 @@ impl ACSARouter {
 
         // Phase 1.5: Jarvis Plan Verification (不可绕过)
         info!("\n{} [Jarvis] 🔍 Verifying MOSS Plan...", "=".repeat(80));
-        let jarvis_plan_check = self.jarvis.verify_safety(&moss_plan, &user_input);
+        let jarvis_plan_check = self.jarvis.verify_safety(&moss_plan, &processed_input);
 
         if !jarvis_plan_check.allowed {
             error!("🚨 JARVIS HARD BLOCK: MOSS plan rejected");
@@ -141,7 +156,7 @@ impl ACSARouter {
         // Phase 2: L6 Truth Verification (optional)
         if self.config.enable_l6 {
             info!("\n{} [L6] 🔬 Truth Verification...", "=".repeat(80));
-            match self.call_l6(&moss_plan, &user_input).await {
+            match self.call_l6(&moss_plan, &processed_input).await {
                 Ok(response) => {
                     info!(
                         "✓ L6 completed ({} ms, ${:.4})",
@@ -174,7 +189,7 @@ impl ACSARouter {
             log.iterations = iteration + 1;
 
             match self
-                .call_ultron(&current_plan, &current_l6, &user_input)
+                .call_ultron(&current_plan, &current_l6, &processed_input)
                 .await
             {
                 Ok(response) => {
@@ -214,7 +229,7 @@ impl ACSARouter {
 
                         // Replan with feedback (with decaying temperature)
                         match self
-                            .call_moss_with_feedback(&user_input, &audit_result.mitigation, temperature)
+                            .call_moss_with_feedback(&processed_input, &audit_result.mitigation, temperature)
                             .await
                         {
                             Ok(new_plan) => {
@@ -224,7 +239,7 @@ impl ACSARouter {
 
                                 // Re-verify if L6 enabled
                                 if self.config.enable_l6 {
-                                    match self.call_l6(&current_plan, &user_input).await {
+                                    match self.call_l6(&current_plan, &processed_input).await {
                                         Ok(new_l6) => {
                                             log.total_cost += new_l6.cost;
                                             current_l6 = new_l6.text.clone();

@@ -4,6 +4,7 @@
 
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Utc};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
@@ -209,19 +210,19 @@ impl DataSecurityManager {
             enabled: true,
         });
 
-        // 凭证: 密码
+        // 凭证: 密码（支持自然语言和配置格式）
         self.add_sanitization_rule(SanitizationRule {
             category: DataCategory::Credentials,
-            pattern: r#"password["\s:=]+([^\s"]+)"#.to_string(),
-            replacement: r#"password="***REDACTED***""#.to_string(),
+            pattern: r"password\s+(?:is\s+)?([a-zA-Z0-9_\-]+)".to_string(),
+            replacement: r"password ***REDACTED***".to_string(),
             enabled: true,
         });
 
-        // API密钥: 常见格式
+        // API密钥: 常见格式（支持自然语言）
         self.add_sanitization_rule(SanitizationRule {
             category: DataCategory::ApiKeys,
-            pattern: "(api[_-]?key|token)[\"\\s:=]+([a-zA-Z0-9_\\-]{20,})".to_string(),
-            replacement: "$1=***REDACTED***".to_string(),
+            pattern: r"(?:API\s+)?key\s+(?:is\s+)?([a-zA-Z0-9_\-]{10,})".to_string(),
+            replacement: r"key ***REDACTED***".to_string(),
             enabled: true,
         });
 
@@ -249,11 +250,14 @@ impl DataSecurityManager {
                 }
             }
 
-            // 简化的正则替换（实际应该用regex crate）
-            // 这里先用简单的字符串替换示意
-            if content.contains(&rule.pattern) {
-                warn!("🔒 Sensitive data detected: {:?}", rule.category);
-                sanitized = sanitized.replace(&rule.pattern, &rule.replacement);
+            // 使用regex crate进行正则替换
+            if let Ok(re) = Regex::new(&rule.pattern) {
+                if re.is_match(&sanitized) {
+                    warn!("🔒 Sensitive data detected: {:?}", rule.category);
+                    sanitized = re.replace_all(&sanitized, &rule.replacement).to_string();
+                }
+            } else {
+                warn!("Invalid regex pattern in rule: {}", rule.pattern);
             }
         }
 
@@ -393,7 +397,16 @@ impl DataSecurityManager {
             "jpg" | "png" | "gif" | "bmp" => DataCategory::Media,
             _ => {
                 // 基于内容的深度分类
-                if content.contains("password") || content.contains("secret") {
+                // 检测源代码特征
+                if content.contains("fn main()")
+                    || content.contains("def ")
+                    || content.contains("function ")
+                    || content.contains("class ")
+                    || content.contains("import ")
+                    || content.contains("package ")
+                    || content.contains("#include") {
+                    DataCategory::SourceCode
+                } else if content.contains("password") || content.contains("secret") {
                     DataCategory::Credentials
                 } else if content.contains("api_key") || content.contains("token") {
                     DataCategory::ApiKeys
