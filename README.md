@@ -10,6 +10,8 @@
 
 ## ⚡ 快速开始（一键启动）
 
+### 🐧 Linux / 🍎 macOS
+
 ```bash
 # 克隆项目
 git clone https://github.com/your-org/ACSA.git
@@ -19,7 +21,30 @@ cd ACSA
 ./quick-start.sh
 ```
 
+### 🪟 Windows
+
+**方法1 - PowerShell（推荐）:**
+```powershell
+# 克隆项目
+git clone https://github.com/your-org/ACSA.git
+cd ACSA
+
+# 一键启动
+.\quick-start.ps1
+```
+
+**方法2 - 命令提示符:**
+```cmd
+# 克隆项目
+git clone https://github.com/your-org/ACSA.git
+cd ACSA
+
+# 一键启动
+quick-start.bat
+```
+
 **脚本功能：**
+- ✅ 自动检测操作系统（Linux/macOS/Windows）
 - ✅ 自动检查 Rust/Cargo 环境
 - ✅ 自动构建项目（Release模式）
 - ✅ 提供多种运行选项（CLI/测试/文档）
@@ -370,23 +395,46 @@ println!("{}", protected_text);
 
 ## 🛠️ 技术栈
 
+### 依赖管理
+
+**Rust使用 `Cargo.toml` 和 `Cargo.lock` 管理依赖（类似Python的requirements）：**
+
+- **Cargo.toml** = `requirements.txt`（定义依赖和版本范围）
+- **Cargo.lock** = `requirements.lock`（锁定精确版本）
+
+**查看依赖：**
+```bash
+cd o_sovereign_rust
+cat Cargo.toml  # 查看所有依赖
+```
+
+**更新依赖：**
+```bash
+cargo update    # 更新到最新兼容版本
+```
+
+**无需手动创建requirements文件**，Cargo会自动管理所有依赖！
+
 ### 核心技术
 - **Rust** 1.75+：系统级性能和内存安全
-- **Tokio**：异步运行时
-- **Axum**：HTTP服务器框架
-- **SQLx**：数据库访问（PostgreSQL/MySQL）
-- **Redis**：分布式锁和缓存
+- **Tokio** 1.42：异步运行时
+- **Reqwest** 0.12：HTTP客户端（支持rustls）
+- **Axum** 0.7：HTTP服务器框架
+- **Serde** 1.0：序列化/反序列化
+- **Chrono** 0.4：日期时间处理
+- **Regex** 1.11：正则表达式
+- **Anyhow** / **Thiserror**：错误处理
 
 ### AI 集成
-- **OpenAI API**：GPT-4/GPT-3.5
+- **async-openai** 0.20：OpenAI GPT-4/5
 - **Anthropic Claude**：Claude 3.5
 - **DeepSeek**：本地模型支持
 - **Google Gemini**：多模态能力
 
 ### 监控与可观测性
-- **Prometheus**：指标采集
 - **Tracing**：结构化日志
-- **Audit Log**：审计跟踪
+- **Prometheus**：指标采集（可选）
+- **Audit Log**：审计跟踪（内置）
 
 ---
 

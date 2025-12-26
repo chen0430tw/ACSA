@@ -3,6 +3,7 @@ set -e
 
 # ACSA 一键启动脚本
 # Quick Start Script for ACSA (O-Sovereign)
+# 支持 Linux / macOS
 
 echo "================================="
 echo "   ACSA 一键启动脚本"
@@ -15,7 +16,19 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
+
+# 检测操作系统
+OS="$(uname -s)"
+case "${OS}" in
+    Linux*)     PLATFORM=Linux;;
+    Darwin*)    PLATFORM=macOS;;
+    *)          PLATFORM="UNKNOWN:${OS}"
+esac
+
+echo -e "${CYAN}检测到系统: ${PLATFORM}${NC}"
+echo ""
 
 # 检查函数
 check_command() {
@@ -40,6 +53,11 @@ if check_command rustc; then
     echo "      版本: $RUST_VERSION"
 else
     echo -e "${YELLOW}      请安装 Rust: https://rustup.rs/${NC}"
+    if [ "${PLATFORM}" = "macOS" ]; then
+        echo -e "${YELLOW}      或使用 Homebrew: brew install rust${NC}"
+    elif [ "${PLATFORM}" = "Linux" ]; then
+        echo -e "${YELLOW}      或使用包管理器: sudo apt install rustc cargo (Debian/Ubuntu)${NC}"
+    fi
     MISSING_DEPS=1
 fi
 
@@ -64,7 +82,17 @@ if [ $MISSING_DEPS -eq 1 ]; then
     echo -e "${RED}错误: 缺少必要依赖，请先安装上述工具${NC}"
     echo ""
     echo "安装 Rust & Cargo:"
-    echo "  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+    if [ "${PLATFORM}" = "macOS" ]; then
+        echo "  方法1 (推荐): curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+        echo "  方法2: brew install rust"
+    elif [ "${PLATFORM}" = "Linux" ]; then
+        echo "  方法1 (推荐): curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+        echo "  方法2 (Debian/Ubuntu): sudo apt install rustc cargo"
+        echo "  方法3 (Fedora): sudo dnf install rust cargo"
+        echo "  方法4 (Arch): sudo pacman -S rust"
+    else
+        echo "  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+    fi
     echo ""
     exit 1
 fi
