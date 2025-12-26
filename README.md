@@ -14,7 +14,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-org/ACSA.git
+git clone https://github.com/chen0430tw/ACSA.git
 cd ACSA
 
 # 一键启动（自动检查环境、构建、运行）
@@ -26,7 +26,7 @@ cd ACSA
 **方法1 - PowerShell（推荐）:**
 ```powershell
 # 克隆项目
-git clone https://github.com/your-org/ACSA.git
+git clone https://github.com/chen0430tw/ACSA.git
 cd ACSA
 
 # 一键启动
@@ -36,7 +36,7 @@ cd ACSA
 **方法2 - 命令提示符:**
 ```cmd
 # 克隆项目
-git clone https://github.com/your-org/ACSA.git
+git clone https://github.com/chen0430tw/ACSA.git
 cd ACSA
 
 # 一键启动
