@@ -12,8 +12,9 @@ fn main() {
     // Load environment variables
     dotenv::dotenv().ok();
 
-    // Launch Dioxus desktop app
-    dioxus::desktop::launch(App);
+    // Launch Dioxus 0.7 desktop app
+    // Note: 0.7 uses simplified launch API
+    launch(App);
 }
 
 #[component]

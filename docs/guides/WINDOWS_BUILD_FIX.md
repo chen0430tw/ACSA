@@ -2,18 +2,25 @@
 
 ## 问题概述
 
-Windows 下编译 ACSA 的 UI 版本（包含 dioxus）时，可能遇到以下错误：
+Windows 下编译 ACSA 的 UI 版本（包含 Dioxus 0.7 + Ratatui）时，可能遇到以下错误：
 
 ```
 error[E0433]: failed to resolve: use of unresolved module or unlinked crate `dioxus`
+error[E0433]: failed to resolve: use of unresolved crate `dioxus_tui`
 linking with `link.exe` failed: exit code: 1120
 ```
 
 ## 根本原因
 
-1. **Dioxus 0.7.0 已知问题**：最新版 dx-cli 在 Windows 上链接失败（2025年11月报告）
+1. **Dioxus 架构变更**：
+   - Dioxus 0.7 移除了 TUI 后端（从 0.5 开始）
+   - 现在使用 **Dioxus 0.7**（桌面 GUI）+ **Ratatui 0.29**（终端 TUI）
+   - `use_signal` 现在通过 `dioxus::prelude::*` 引入
+
 2. **缺失 MSVC 工具链**：Rust 在 Windows 上需要 Microsoft Visual C++ 编译工具
+
 3. **缺失 CMake**：`aws-lc-sys` 依赖（rustls 的 TLS 实现）需要 CMake
+
 4. **缺失 NASM**（可选）：某些加密库可能需要
 
 ## 完整解决方案
@@ -214,15 +221,32 @@ choco install webview2-runtime -y
 1. **MSVC vs GNU**：Windows 默认使用 MSVC ABI，而 Linux/macOS 使用 GCC/Clang
 2. **动态链接库**：Windows 的 DLL 系统与 Unix 的 .so 不同
 3. **TLS 实现**：`rustls` 使用的 `aws-lc-sys` 需要 CMake 和 C++ 编译器
-4. **WebView2**：dioxus-desktop 依赖 Windows 特有的 WebView2 组件
+4. **WebView2**：Dioxus 0.7 desktop 依赖 Windows 特有的 WebView2 组件
 
-### Dioxus 0.7.0 具体问题
+### Dioxus 0.7 架构变更
 
-根据 GitHub Issues [#4877](https://github.com/DioxusLabs/dioxus/issues/4877) 和 [#4878](https://github.com/DioxusLabs/dioxus/issues/4878)，Dioxus CLI 0.7.0 在 Windows 11 上存在链接器问题：
+**重要变化（2025年12月）：**
+
+1. **TUI 后端移除**：Dioxus 从 0.5 开始移除了 TUI 支持（[Issue #2620](https://github.com/DioxusLabs/dioxus/issues/2620)）
+   - `dioxus-tui` 包已不存在
+   - 官方推荐使用 [Ratatui](https://github.com/ratatui/ratatui) 作为 TUI 替代
+
+2. **Signal 系统重写**：
+   - `use_signal` 必须通过 `use dioxus::prelude::*` 引入
+   - 基于 generational-box 的新实现
+   - Launch API 简化：`launch(App)` 替代 `dioxus::desktop::launch(App)`
+
+3. **ACSA 架构**：
+   - **desktop.rs**：使用 Dioxus 0.7（WebView2 桌面 GUI）
+   - **tui.rs**：使用 Ratatui 0.29 + Crossterm 0.28（终端 TUI）
+
+### dx-cli 已知问题
+
+根据 GitHub Issues [#4877](https://github.com/DioxusLabs/dioxus/issues/4877) 和 [#4878](https://github.com/DioxusLabs/dioxus/issues/4878)，dx-cli 0.7.0 在 Windows 11 上存在链接器问题：
 
 - 错误代码：`exit code: 1120`（符号未定义）
 - 影响版本：dx-cli 0.7.0（2025年11月发布）
-- 临时解决：降级到 0.7.0-rc.3 或使用 0.4.x 稳定版
+- 临时解决：降级到 0.7.0-rc.3（但推荐直接使用 `cargo build`）
 
 ## 参考链接
 
@@ -230,15 +254,19 @@ choco install webview2-runtime -y
 - [Rust MSVC 工具链安装指南](https://rust-lang.github.io/rustup/installation/windows-msvc.html)
 - [Visual Studio Build Tools 下载](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
 - [CMake 官方下载](https://cmake.org/download/)
+- [Dioxus 0.7 迁移指南](https://dioxuslabs.com/learn/0.7/migration/to_07/)
+- [Ratatui 官方文档](https://ratatui.rs/)
 
 **相关 Issues：**
 - [dx-cli 0.7.0 Windows 编译失败 #4878](https://github.com/DioxusLabs/dioxus/issues/4878)
 - [dx-cli 0.7.0 桌面版构建失败 #4877](https://github.com/DioxusLabs/dioxus/issues/4877)
+- [Dioxus TUI 状态和路线图 #2620](https://github.com/DioxusLabs/dioxus/issues/2620)
 - [link.exe 未找到解决方案](https://users.rust-lang.org/t/link-exe-not-found-error-when-building-rust-on-windows-11-msvc-target/133232)
 
 **社区讨论：**
 - [Windows 11 编译配置](https://github.com/DioxusLabs/dioxus/discussions/4249)
 - [AWS-LC-SYS CMake 依赖问题](https://github.com/DioxusLabs/dioxus/issues/3309)
+- [Ratatui vs tui-rs #1311](https://github.com/DioxusLabs/dioxus/issues/1311)
 
 ## 总结
 
