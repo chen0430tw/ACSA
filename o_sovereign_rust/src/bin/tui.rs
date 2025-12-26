@@ -200,6 +200,12 @@ fn ui(f: &mut Frame, app: &App) {
         );
     f.render_widget(input, chunks[3]);
 
+    // 设置光标位置（在输入框内）
+    f.set_cursor_position((
+        chunks[3].x + app.input.len() as u16 + 1, // +1 for border
+        chunks[3].y + 1, // +1 for border
+    ));
+
     // Output Box
     let output = Paragraph::new(app.output.as_str())
         .style(Style::default().fg(Color::White))

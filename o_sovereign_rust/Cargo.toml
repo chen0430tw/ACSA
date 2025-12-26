@@ -39,7 +39,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "ansi",
 
 # UI frameworks (optional - only compiled when 'ui' feature is enabled)
 # Dioxus 0.7 for desktop GUI (WebView2-based)
-dioxus = { version = "0.7", optional = true }
+dioxus = { version = "0.7", features = ["desktop"], optional = true }
 # Ratatui for terminal UI (replaces dioxus-tui which was removed in 0.5)
 ratatui = { version = "0.29", optional = true }
 crossterm = { version = "0.28", features = ["serde", "event-stream"], optional = true }

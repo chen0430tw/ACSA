@@ -24,11 +24,26 @@
       "path": "o_sovereign_rust/",
       "key_directories": {
         "src/core/": "核心模块实现",
-        "src/bin/": "可执行文件"
+        "src/bin/": "可执行文件（desktop, tui, cli）"
       },
       "build_files": {
         "Cargo.toml": "Rust项目配置",
         "Cargo.lock": "依赖锁定文件"
+      },
+      "ui_architecture": {
+        "desktop": {
+          "framework": "Dioxus 0.7",
+          "platform": "WebView2-based GUI",
+          "file": "src/bin/desktop.rs",
+          "feature_flag": "ui"
+        },
+        "tui": {
+          "framework": "Ratatui 0.29 + Crossterm 0.28",
+          "platform": "Terminal UI",
+          "file": "src/bin/tui.rs",
+          "feature_flag": "ui",
+          "note": "Dioxus TUI 已在 0.5 版本移除，改用 Ratatui"
+        }
       }
     },
 
@@ -44,6 +59,14 @@
         "ASCA疫苗.md": "ACSA认知疫苗系统详细说明（核心理论）",
         "PROJECT_SUMMARY.md": "项目总结",
         "O-Sovereign评估方案.md": "评估方案"
+      },
+      "guides": {
+        "COGNITIVE_CLEANER_GUIDE.md": "认知清洗系统使用指南",
+        "DICTIONARY_FORMAT.md": "字典文件格式说明",
+        "WINDOWS_BUILD_FIX.md": "Windows 编译修复完全指南（含编译优化技巧）",
+        "MCP_INTEGRATION_GUIDE.md": "MCP 集成指南（含安全警告）",
+        "LSP_SERVER_GUIDE.md": "LSP 服务器指南（编辑器集成）",
+        "LEGAL_DISCLAIMER.md": "法律免责声明"
       }
     },
 
@@ -65,6 +88,27 @@
       "description": "概念验证原型",
       "path": "o_sovereign_poc/",
       "note": "早期POC代码"
+    }
+  },
+
+  "protocols": {
+    "mcp": {
+      "name": "Model Context Protocol",
+      "version": "2025-11-25",
+      "file": "o_sovereign_rust/src/core/mcp_server.rs",
+      "description": "标准化AI应用与外部工具集成协议（Anthropic/Linux Foundation）",
+      "capabilities": ["Tools", "Resources", "Prompts"],
+      "integrations": ["Google", "GitHub", "Slack", "Notion", "网盘服务"],
+      "security_warning": "⚠️ 仅连接可信服务，不可信网站可能诱导数据泄露",
+      "guide": "docs/guides/MCP_INTEGRATION_GUIDE.md"
+    },
+    "lsp": {
+      "name": "Language Server Protocol",
+      "file": "o_sovereign_rust/src/core/lsp_server.rs",
+      "description": "智能代码补全与诊断服务器",
+      "features": ["代码补全", "诊断", "定义跳转", "悬停提示"],
+      "editors": ["VS Code", "Neovim", "Emacs", "Vim", "Sublime Text"],
+      "guide": "docs/guides/LSP_SERVER_GUIDE.md"
     }
   },
 
@@ -264,13 +308,18 @@
 
   "recent_updates": {
     "version": "0.1.0",
+    "date": "2025-12-26",
     "highlights": [
       "添加主权模式与认知疫苗系统",
       "添加MOSS数据洞察（11种检测）",
-      "修复关键bug（panic、竞态、内存泄漏）",
+      "升级UI架构：Dioxus 0.7 + Ratatui 0.29",
+      "修复关键bug（panic、竞态、内存泄漏、Protocol/Performance测试）",
       "添加Apache 2.0 License",
       "重组文档结构（docs/目录）",
-      "添加一键启动脚本"
+      "添加一键启动脚本",
+      "Windows编译完全指南（含编译优化技巧）",
+      "MCP集成指南（含安全警告）",
+      "修复Desktop启动错误和TUI光标显示"
     ]
   },
 

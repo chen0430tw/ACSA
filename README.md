@@ -201,7 +201,8 @@ Redis分布式锁、服务发现和集群管理。
 - ✅ **协议版本**: 2025-11-25 (最新规范)
 - ✅ **支持能力**: Tools, Resources, Prompts
 - ✅ **平台集成**: Google, GitHub, Slack, Notion, 网盘服务等
-- 📖 **详细文档**: [MCP 集成指南](docs/guides/MCP_INTEGRATION_GUIDE.md)
+- ⚠️ **安全警告**: 仅连接可信服务，不可信网站可能诱导数据泄露
+- 📖 **详细文档**: [MCP 集成指南](docs/guides/MCP_INTEGRATION_GUIDE.md)（含安全建议）
 
 **快速示例**:
 ```rust
@@ -301,6 +302,10 @@ wsl --install -d Ubuntu-22.04
 ```
 
 **详细修复指南：** [Windows 编译修复完全指南](docs/guides/WINDOWS_BUILD_FIX.md) 📖
+- 包含 NASM/CMake 手动 PATH 配置
+- aws-lc-sys 预编译解决方案
+- **编译时间优化技巧**：cargo check, sccache, 并行编译等 8 种加速方法
+- 硬件配置推荐和编译时间对比表
 
 **仅需命令行版本？** 使用 `cargo build --release` 即可，无需上述依赖。
 
@@ -397,7 +402,18 @@ println!("{}", protected_text);
 - [认知清洗系统使用指南](docs/guides/COGNITIVE_CLEANER_GUIDE.md) ✅
 - [字典文件格式说明](docs/guides/DICTIONARY_FORMAT.md) ✅
 - [**Windows 编译修复完全指南**](docs/guides/WINDOWS_BUILD_FIX.md) 🆕
+  - NASM/CMake 配置 + aws-lc-sys 预编译方案
+  - 编译时间优化技巧（cargo check, sccache 等）
 - [文档索引](docs/README.md) ✅
+
+### 集成与扩展
+- [**MCP 集成指南**](docs/guides/MCP_INTEGRATION_GUIDE.md) 🔌
+  - ⚠️ **包含重要安全警告**：数据隐私与网站信任
+  - Google、GitHub、Slack、网盘服务等平台集成
+  - API 平台规则与速率限制
+- [LSP 服务器指南](docs/guides/LSP_SERVER_GUIDE.md) 💡
+  - 智能代码补全与诊断
+  - VS Code、Neovim、Emacs 编辑器配置
 
 ### 法律与合规
 - [法律免责声明](docs/guides/LEGAL_DISCLAIMER.md) ✅
