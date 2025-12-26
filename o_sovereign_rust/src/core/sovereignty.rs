@@ -236,7 +236,11 @@ impl BioActivity {
     ) -> Self {
         let exponent = -lambda * node_density * time_hours;
         let current = h0 * exponent.exp();
-        let decay_rate = ((h0 - current) / h0) * 100.0;
+        let decay_rate = if h0 > 0.0 {
+            ((h0 - current) / h0) * 100.0
+        } else {
+            0.0
+        };
 
         let risk_level = if current > 80.0 {
             RiskLevel::Healthy
@@ -288,12 +292,10 @@ impl DoseMeter {
 
     /// 记录决策事件
     pub async fn record_decision(&self, event: DecisionEvent) {
-        // 记录首次使用时间
+        // 记录首次使用时间 (使用 get_or_insert_with 避免竞态条件)
         {
             let mut first_use = self.first_use.write().await;
-            if first_use.is_none() {
-                *first_use = Some(Utc::now());
-            }
+            first_use.get_or_insert_with(|| Utc::now());
         }
 
         // 添加事件
@@ -844,8 +846,9 @@ impl UsageTracker {
     pub async fn end_session(&self) -> Option<UsageSession> {
         let mut session = self.current_session.write().await;
         if let Some(mut s) = session.take() {
-            s.end_time = Some(Utc::now());
-            s.duration_secs = s.end_time.unwrap().signed_duration_since(s.start_time).num_seconds();
+            let end_time = Utc::now();
+            s.end_time = Some(end_time);
+            s.duration_secs = end_time.signed_duration_since(s.start_time).num_seconds();
 
             // 添加到历史记录
             let mut sessions = self.sessions.write().await;
@@ -1025,6 +1028,23 @@ impl UsageTracker {
         let today = self.get_today_usage().await;
         Some(config.daily_limit_minutes.saturating_sub(today.total_minutes))
     }
+
+    /// 清理旧的统计数据 (保留最近90天)
+    /// 应定期调用以防止内存泄漏
+    pub async fn cleanup_old_stats(&self) {
+        let cutoff_date = (Utc::now() - Duration::days(90))
+            .format("%Y-%m-%d")
+            .to_string();
+
+        let mut stats = self.daily_stats.write().await;
+        let before_count = stats.len();
+        stats.retain(|date, _| date >= &cutoff_date);
+        let after_count = stats.len();
+
+        if before_count > after_count {
+            debug!("🧹 Cleaned up {} old daily stats entries", before_count - after_count);
+        }
+    }
 }
 
 impl Default for UsageTracker {
@@ -1081,7 +1101,7 @@ impl UsageAnalyzer {
                     "检测到 {} 次超短会话，平均每次仅 {:.1} 分钟。\n\
                      您今天的使用模式是「反射动作」：问一句，答一句，不经大脑。\n\
                      恭喜，您已达成「生物电池」成就。\n\
-                     黄世光老师的话：「30秒会话 = 生物电池，30分钟会话 = 主权人类」",
+                     黄世聪老师的话：「30秒会话 = 生物电池，30分钟会话 = 主权人类」",
                     today.session_count,
                     today.avg_session_minutes
                 ),
@@ -1091,7 +1111,11 @@ impl UsageAnalyzer {
         }
         // 2. 碎片化提问检测 (改进版)
         else if today.session_count >= 20 && today.avg_session_minutes < 5.0 {
-            let total_sessions_week = ((week.total_minutes as f32 / week.avg_daily_minutes) * 7.0) as u32;
+            let total_sessions_week = if week.avg_daily_minutes > 0.0 {
+                ((week.total_minutes as f32 / week.avg_daily_minutes) * 7.0) as u32
+            } else {
+                0
+            };
 
             let variants = [
                 format!(
@@ -1131,7 +1155,7 @@ impl UsageAnalyzer {
         // 3. 过度依赖检测 (改进版 - 多变体)
         if week.avg_daily_minutes > 180.0 {
             let hours = week.avg_daily_minutes / 60.0;
-            let h_value = (100.0 - (hours / 24.0 * 100.0).min(80.0)) as u32;
+            let h_value = (100.0 - (hours / 24.0 * 100.0).min(80.0)).max(0.0) as u32;
 
             let variants = [
                 format!(
@@ -1306,7 +1330,7 @@ impl UsageAnalyzer {
                          依赖曲线正在爬升。\n\
                          如Bloomberg所说：「那条红色的依赖曲线，是文明进步的标志」。\n\
                          但您确定要庆祝吗？",
-                        ((second_half as f32 / first_half as f32) - 1.0) * 100.0
+                        ((second_half as f32 / first_half.max(1) as f32) - 1.0) * 100.0
                     ),
                     evidence: format!("前3天: {}min, 后3天: {}min", first_half, second_half),
                 });
@@ -1342,7 +1366,7 @@ impl UsageAnalyzer {
                     "主权等级评定：{}\n\
                      {} 次会话，平均 {:.1} 分钟。\n\
                      您的使用模式：问→答→下一个（无思考间隔）。\n\
-                     黄世光的标准：30秒 = 生物电池，30分钟 = 主权人类。\n\
+                     黄世聪的标准：30秒 = 生物电池，30分钟 = 主权人类。\n\
                      建议：下次提问前，先自己想30秒。",
                     level_name,
                     session_count,
