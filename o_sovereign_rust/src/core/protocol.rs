@@ -516,7 +516,7 @@ mod tests {
         let manager = ProtocolManager::new();
 
         for protocol in Protocol::all() {
-            let config = manager.get_config(protocol);
+            let config = manager.get_config(protocol.clone());
             assert_eq!(config.protocol, protocol);
             assert!(config.agent_weights.is_valid());
         }
