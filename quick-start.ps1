@@ -12,10 +12,25 @@ Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # 颜色函数
-function Write-Success { param($msg) Write-Host "✓ $msg" -ForegroundColor Green }
-function Write-Error { param($msg) Write-Host "✗ $msg" -ForegroundColor Red }
-function Write-Warning { param($msg) Write-Host "⚠ $msg" -ForegroundColor Yellow }
-function Write-Info { param($msg) Write-Host "$msg" -ForegroundColor Blue }
+function Write-Success {
+    param($msg)
+    Write-Host "✓ $msg" -ForegroundColor Green
+}
+
+function Write-ErrorMsg {
+    param($msg)
+    Write-Host "✗ $msg" -ForegroundColor Red
+}
+
+function Write-Warning {
+    param($msg)
+    Write-Host "⚠ $msg" -ForegroundColor Yellow
+}
+
+function Write-Info {
+    param($msg)
+    Write-Host "$msg" -ForegroundColor Blue
+}
 
 # 检查命令函数
 function Test-Command {
@@ -36,7 +51,7 @@ if (Test-Command "rustc") {
     $rustVersion = rustc --version
     Write-Host "      版本: $rustVersion" -ForegroundColor Gray
 } else {
-    Write-Error "Rust 未安装"
+    Write-ErrorMsg "Rust 未安装"
     Write-Warning "      请访问: https://rustup.rs/"
     $missingDeps = $true
 }
@@ -47,7 +62,7 @@ if (Test-Command "cargo") {
     $cargoVersion = cargo --version
     Write-Host "      版本: $cargoVersion" -ForegroundColor Gray
 } else {
-    Write-Error "Cargo 未安装"
+    Write-ErrorMsg "Cargo 未安装"
     Write-Warning "      请访问: https://rustup.rs/"
     $missingDeps = $true
 }
@@ -62,7 +77,7 @@ if (Test-Command "git") {
 Write-Host ""
 
 if ($missingDeps) {
-    Write-Error "错误: 缺少必要依赖，请先安装上述工具"
+    Write-ErrorMsg "错误: 缺少必要依赖，请先安装上述工具"
     Write-Host ""
     Write-Host "安装 Rust & Cargo:" -ForegroundColor Yellow
     Write-Host "  方法1: 访问 https://rustup.rs/ 下载安装器"
@@ -78,7 +93,7 @@ Write-Info "[2/5] 检查项目结构..."
 Write-Host ""
 
 if (-not (Test-Path "o_sovereign_rust")) {
-    Write-Error "错误: 找不到 o_sovereign_rust 目录"
+    Write-ErrorMsg "错误: 找不到 o_sovereign_rust 目录"
     Write-Host "请确保在 ACSA 项目根目录执行此脚本" -ForegroundColor Yellow
     Write-Host ""
     Read-Host "按任意键退出"
@@ -108,6 +123,7 @@ if (-not (Test-Path ".env.example")) {
         Write-Success ".env 配置文件已存在"
     }
 }
+
 Write-Host ""
 
 # 步骤4：构建项目
@@ -116,13 +132,13 @@ Write-Host ""
 Write-Host "这可能需要几分钟时间（首次构建）..." -ForegroundColor Cyan
 Write-Host ""
 
-$buildResult = cargo build --release 2>&1
+$buildOutput = cargo build --release 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Error "✗ 构建失败"
+    Write-ErrorMsg "✗ 构建失败"
     Write-Host ""
     Write-Host "错误详情:" -ForegroundColor Red
-    Write-Host $buildResult
+    Write-Host $buildOutput
     Write-Host ""
     Read-Host "按任意键退出"
     Set-Location ..
@@ -154,18 +170,21 @@ switch ($choice) {
         Write-Success "启动 CLI 模式..."
         Write-Host ""
         cargo run --release --bin o-sovereign-cli
+        break
     }
     "2" {
         Write-Host ""
         Write-Success "运行测试..."
         Write-Host ""
         cargo test
+        break
     }
     "3" {
         Write-Host ""
         Write-Success "生成文档..."
         Write-Host ""
         cargo doc --no-deps --open
+        break
     }
     "4" {
         Write-Host ""
@@ -175,7 +194,7 @@ switch ($choice) {
     }
     default {
         Write-Host ""
-        Write-Error "无效选项"
+        Write-ErrorMsg "无效选项"
         Read-Host "按任意键退出"
         Set-Location ..
         exit 1
