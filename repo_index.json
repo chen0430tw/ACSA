@@ -11,8 +11,11 @@
       "key_files": {
         "README.md": "项目介绍和快速开始指南",
         "LICENSE": "Apache 2.0开源许可证",
-        "ASCA疫苗.md": "ACSA认知疫苗系统详细说明（重要文档）",
-        "quick-start.sh": "一键启动脚本"
+        "repo_schema.md": "项目架构说明",
+        "repo_index.json": "AI可读性索引",
+        "quick-start.sh": "一键启动脚本（Linux/macOS）",
+        "quick-start.ps1": "一键启动脚本（Windows PowerShell）",
+        "quick-start.bat": "一键启动脚本（Windows CMD）"
       }
     },
 
@@ -38,6 +41,7 @@
       },
       "key_files": {
         "README.md": "文档索引",
+        "ASCA疫苗.md": "ACSA认知疫苗系统详细说明（核心理论）",
         "PROJECT_SUMMARY.md": "项目总结",
         "O-Sovereign评估方案.md": "评估方案"
       }
@@ -273,7 +277,7 @@
   "for_ai_readers": {
     "recommended_reading_order": [
       "1. README.md - 快速了解项目",
-      "2. ASCA疫苗.md - 理解核心理念",
+      "2. docs/ASCA疫苗.md - 理解核心理念",
       "3. repo_schema.md - 理解架构",
       "4. o_sovereign_rust/src/core/sovereignty.rs - 核心实现",
       "5. docs/guides/ - 详细文档"
