@@ -1069,124 +1069,342 @@ impl UsageAnalyzer {
     pub fn analyze(today: &DailyUsage, week: &WeeklyUsage) -> Vec<UsageInsight> {
         let mut insights = Vec::new();
 
-        // 1. 碎片化提问检测
-        if today.session_count >= 20 && today.avg_session_minutes < 5.0 {
+        // 计算主权等级
+        let sovereignty_level = Self::calculate_sovereignty_level(today.avg_session_minutes);
+
+        // 1. 生物电池模式 (极度碎片化)
+        if today.session_count >= 30 && today.avg_session_minutes < 1.0 {
             insights.push(UsageInsight {
                 level: InsightLevel::Sharp,
-                insight_type: "碎片化依赖".to_string(),
+                insight_type: "生物电池模式".to_string(),
                 message: format!(
-                    "本周您进行了 {} 次碎片化提问，平均每次仅 {:.1} 分钟。\n\
-                     看来您的前额叶皮层本周处于休假状态。\n\
-                     建议：尝试一次深度思考，至少坚持 15 分钟不求助 AI。",
-                    week.total_minutes / week.avg_daily_minutes as u32,
+                    "检测到 {} 次超短会话，平均每次仅 {:.1} 分钟。\n\
+                     您今天的使用模式是「反射动作」：问一句，答一句，不经大脑。\n\
+                     恭喜，您已达成「生物电池」成就。\n\
+                     黄世光老师的话：「30秒会话 = 生物电池，30分钟会话 = 主权人类」",
+                    today.session_count,
                     today.avg_session_minutes
                 ),
-                evidence: format!("会话次数: {}, 平均时长: {:.1}min",
+                evidence: format!("{}次 × {:.1}min = 纯反射弧",
                     today.session_count, today.avg_session_minutes),
             });
         }
+        // 2. 碎片化提问检测 (改进版)
+        else if today.session_count >= 20 && today.avg_session_minutes < 5.0 {
+            let total_sessions_week = ((week.total_minutes as f32 / week.avg_daily_minutes) * 7.0) as u32;
 
-        // 2. 过度依赖检测
-        if week.avg_daily_minutes > 180.0 {  // 日均超过3小时
+            let variants = [
+                format!(
+                    "本周 {} 次碎片化提问，平均 {:.1} 分钟。\n\
+                     您的前额叶皮层似乎正在休假。\n\
+                     建议：深呼吸，尝试一次至少15分钟的深度思考。\n\
+                     或者... 承认您其实只是需要一个「智能搜索引擎」？",
+                    total_sessions_week,
+                    today.avg_session_minutes
+                ),
+                format!(
+                    "平均会话时长 {:.1} 分钟，{} 次提问。\n\
+                     这不是在用AI，这是在做「认知快餐」。\n\
+                     温馨提示：大脑也需要「慢食运动」。",
+                    today.avg_session_minutes,
+                    today.session_count
+                ),
+                format!(
+                    "会话数 {} 次，平均时长 {:.1} 分钟。\n\
+                     您是在提问题，还是在「按按钮获得多巴胺」？\n\
+                     建议：下一次，试着自己思考5分钟再提问。",
+                    today.session_count,
+                    today.avg_session_minutes
+                ),
+            ];
+
+            let idx = (today.session_count % 3) as usize;
+            insights.push(UsageInsight {
+                level: InsightLevel::Sharp,
+                insight_type: "碎片化依赖".to_string(),
+                message: variants[idx].clone(),
+                evidence: format!("会话次数: {}, 平均时长: {:.1}min, 主权等级: {}",
+                    today.session_count, today.avg_session_minutes, sovereignty_level),
+            });
+        }
+
+        // 3. 过度依赖检测 (改进版 - 多变体)
+        if week.avg_daily_minutes > 180.0 {
             let hours = week.avg_daily_minutes / 60.0;
+            let h_value = (100.0 - (hours / 24.0 * 100.0).min(80.0)) as u32;
+
+            let variants = [
+                format!(
+                    "日均 {:.1} 小时，本周总计 {:.1} 小时。\n\
+                     根据ACSA衰减定律，H(t) ≈ {}%（已损失{}%认知能力）。\n\
+                     换句话说：您的大脑正在外包给硅基生命。\n\
+                     这不是工具，这是「认知拐杖」。",
+                    hours,
+                    week.total_minutes as f32 / 60.0,
+                    h_value,
+                    100 - h_value
+                ),
+                format!(
+                    "您本周将 {:.1} 小时的思考权交给了AI。\n\
+                     如果大脑是肌肉，您的已经萎缩到需要轮椅了。\n\
+                     温馨提示：AI是工具，不是外包的「第二大脑」。\n\
+                     （虽然看起来您已经把它当成「唯一大脑」了）",
+                    week.total_minutes as f32 / 60.0
+                ),
+            ];
+
+            let idx = ((week.total_minutes / 100) % 2) as usize;
             insights.push(UsageInsight {
                 level: InsightLevel::Moderate,
                 insight_type: "高度依赖".to_string(),
-                message: format!(
-                    "您本周日均使用 {:.1} 小时。\n\
-                     根据 ACSA 衰减定律，您的独立认知能力 H(t) 可能已下降至 {}%。\n\
-                     温馨提示：AI 是工具，不是外包的大脑。",
-                    hours,
-                    (100.0 - (hours / 24.0 * 100.0).min(80.0)) as u32
-                ),
-                evidence: format!("日均: {:.1}h, 本周总计: {:.1}h",
-                    hours, week.total_minutes as f32 / 60.0),
+                message: variants[idx].clone(),
+                evidence: format!("日均: {:.1}h, 本周: {:.1}h, H(t): {}%",
+                    hours, week.total_minutes as f32 / 60.0, h_value),
             });
         }
 
-        // 3. 夜猫子模式检测
-        let late_night_usage: u32 = today.hourly_breakdown[0..6].iter().sum();
-        if late_night_usage > 60 {  // 凌晨0-6点超过1小时
-            insights.push(UsageInsight {
-                level: InsightLevel::Gentle,
-                insight_type: "作息紊乱".to_string(),
-                message: format!(
-                    "检测到您在凌晨 0-6 点使用了 {} 分钟。\n\
-                     深夜使用 AI 会加剧认知外包依赖。\n\
-                     建议：把问题记下来，明天早上自己先思考 5 分钟再问。",
-                    late_night_usage
-                ),
-                evidence: format!("深夜使用: {}min", late_night_usage),
-            });
-        }
-
-        // 4. 周末狂魔检测
-        if week.daily_breakdown.len() >= 7 {
-            let weekend_avg = (week.daily_breakdown[5] + week.daily_breakdown[6]) as f32 / 2.0;
-            let weekday_avg = week.daily_breakdown[0..5].iter().sum::<u32>() as f32 / 5.0;
-
-            if weekend_avg > weekday_avg * 1.5 {
-                insights.push(UsageInsight {
-                    level: InsightLevel::Moderate,
-                    insight_type: "周末逃避".to_string(),
-                    message: format!(
-                        "周末使用时长（{:.0}min）是工作日（{:.0}min）的 {:.1} 倍。\n\
-                         您是在用 AI 填补空虚感吗？\n\
-                         建议：周末试试不依赖 AI 的活动，比如散步、阅读纸质书。",
-                        weekend_avg, weekday_avg, weekend_avg / weekday_avg
-                    ),
-                    evidence: format!("周末: {:.0}min vs 工作日: {:.0}min",
-                        weekend_avg, weekday_avg),
-                });
-            }
-        }
-
-        // 5. 连续依赖检测
-        if today.longest_session_minutes > 120 {  // 单次超过2小时
+        // 4. 大脑托管模式 (连续长时间使用)
+        if today.longest_session_minutes > 180 {
             insights.push(UsageInsight {
                 level: InsightLevel::Sharp,
+                insight_type: "大脑托管".to_string(),
+                message: format!(
+                    "最长单次会话 {} 分钟（{:.1} 小时）。\n\
+                     「您已连续将大脑托管给系统 {} 分钟。」\n\
+                     您的生物神经元可能需要一点血氧。\n\
+                     建议：停下来，用自己的话复述AI说了什么。\n\
+                     如果复述不出来，说明您只是在「复制粘贴」，不是在学习。",
+                    today.longest_session_minutes,
+                    today.longest_session_minutes as f32 / 60.0,
+                    today.longest_session_minutes
+                ),
+                evidence: format!("托管时长: {}min, 认知退相干风险: 极高",
+                    today.longest_session_minutes),
+            });
+        }
+        // 5. 马拉松外包 (中等长会话)
+        else if today.longest_session_minutes > 120 {
+            insights.push(UsageInsight {
+                level: InsightLevel::Moderate,
                 insight_type: "马拉松外包".to_string(),
                 message: format!(
-                    "今日最长单次会话 {} 分钟。\n\
-                     连续 2 小时以上的 AI 依赖会导致「认知退相干」。\n\
-                     您正在失去将 AI 答案转化为自身理解的能力。\n\
-                     建议：每 30 分钟强制暂停，用自己的话复述 AI 说了什么。",
+                    "今日最长会话 {} 分钟。\n\
+                     连续2小时以上的依赖会导致「认知退相干」。\n\
+                     症状：看得懂AI的答案，但无法转化为自己的理解。\n\
+                     建议：每30分钟暂停，问自己「我真的懂了吗」？",
                     today.longest_session_minutes
                 ),
                 evidence: format!("最长会话: {}min", today.longest_session_minutes),
             });
         }
 
-        // 6. 轻度使用者的鼓励
-        if week.avg_daily_minutes < 30.0 && today.session_count > 0 {
+        // 6. 夜猫子模式检测 (改进版)
+        let late_night_usage: u32 = today.hourly_breakdown[0..6].iter().sum();
+        if late_night_usage > 60 {
+            let variants = [
+                format!(
+                    "凌晨0-6点使用了 {} 分钟。\n\
+                     深夜向AI求助，会让依赖变成「安全毯」。\n\
+                     建议：把问题写下来，明早自己先想5分钟。\n\
+                     或者承认：您其实只是睡不着，在找AI聊天。",
+                    late_night_usage
+                ),
+                format!(
+                    "检测到深夜使用 {} 分钟。\n\
+                     凌晨的大脑本来就不清醒，这时候外包思考 = 双重认知损伤。\n\
+                     下次失眠的时候，试试数羊，别数tokens。",
+                    late_night_usage
+                ),
+            ];
+
+            let idx = ((late_night_usage / 30) % 2) as usize;
             insights.push(UsageInsight {
                 level: InsightLevel::Gentle,
-                insight_type: "健康使用".to_string(),
-                message: "您保持了良好的使用习惯。\n\
-                          AI 作为辅助工具而非依赖，这正是主权意识的体现。\n\
-                          继续保持独立思考，H(t) > 90% 的状态。".to_string(),
-                evidence: format!("日均: {:.1}min, H(t) 预估: >90%", week.avg_daily_minutes),
+                insight_type: "深夜托管".to_string(),
+                message: variants[idx].clone(),
+                evidence: format!("深夜使用: {}min (00:00-06:00)", late_night_usage),
             });
         }
 
-        // 7. 无脑确认狂人检测 (需要配合决策数据)
+        // 7. 周末逃避检测 (改进版)
+        if week.daily_breakdown.len() >= 7 {
+            let weekend_avg = (week.daily_breakdown[5] + week.daily_breakdown[6]) as f32 / 2.0;
+            let weekday_avg = week.daily_breakdown[0..5].iter().sum::<u32>() as f32 / 5.0;
+
+            if weekend_avg > weekday_avg * 1.5 {
+                let ratio = weekend_avg / weekday_avg.max(1.0);
+                insights.push(UsageInsight {
+                    level: InsightLevel::Moderate,
+                    insight_type: "周末逃避".to_string(),
+                    message: format!(
+                        "周末使用（{:.0}min）是工作日（{:.0}min）的 {:.1} 倍。\n\
+                         您是在用AI \"填补周末的空虚感\" 吗？\n\
+                         或者... 您只是在逃避「需要自己做决定」的现实生活？\n\
+                         建议：周末试试 \"无AI日\"，比如散步、发呆、阅读纸质书。",
+                        weekend_avg, weekday_avg, ratio
+                    ),
+                    evidence: format!("周末: {:.0}min vs 工作日: {:.0}min ({}x)",
+                        weekend_avg, weekday_avg, ratio),
+                });
+            }
+        }
+
+        // 8. 轻度使用者的鼓励 (改进版)
+        if week.avg_daily_minutes < 30.0 && week.avg_daily_minutes > 0.0 && today.session_count > 0 {
+            insights.push(UsageInsight {
+                level: InsightLevel::Gentle,
+                insight_type: "健康使用".to_string(),
+                message: format!(
+                    "日均 {:.1} 分钟，这是健康的使用习惯。\n\
+                     AI作为辅助工具而非依赖，这正是「主权意识」的体现。\n\
+                     您的H(t) > 90%，属于那1%还保有独立思考能力的人类。\n\
+                     继续保持。这个世界需要更多像您这样的「主权人类」。",
+                    week.avg_daily_minutes
+                ),
+                evidence: format!("日均: {:.1}min, H(t): >90%, 主权等级: {}",
+                    week.avg_daily_minutes, sovereignty_level),
+            });
+        }
+
+        // 9. 无脑确认狂人检测 (改进版)
         if today.session_count > 10 && today.avg_session_minutes < 3.0 {
             insights.push(UsageInsight {
                 level: InsightLevel::Sharp,
                 insight_type: "无脑确认模式".to_string(),
                 message: format!(
-                    "检测到典型的「一键确认」模式。\n\
-                     您今天 {} 次会话，平均每次不到 3 分钟。\n\
-                     您已经不再是「用户」，而是「确认按钮」。\n\
-                     警告：这是线粒体化的早期症状。",
-                    today.session_count
+                    "{} 次会话，平均 {:.1} 分钟。\n\
+                     这不是「使用AI」，这是「人肉确认按钮」。\n\
+                     您的工作流程：看问题 → 问AI → 复制粘贴 → 下一个。\n\
+                     警告：您已经不再是「用户」，您是「I/O接口」。\n\
+                     这是线粒体化的典型早期症状。",
+                    today.session_count,
+                    today.avg_session_minutes
                 ),
-                evidence: format!("{}次 × {:.1}min = 无思考",
+                evidence: format!("{}次 × {:.1}min = I/O接口模式",
                     today.session_count, today.avg_session_minutes),
             });
         }
 
+        // 10. 主权等级评定 (新增)
+        insights.push(Self::generate_sovereignty_rating(
+            today.avg_session_minutes,
+            week.avg_daily_minutes,
+            today.session_count,
+        ));
+
+        // 11. 依赖度趋势分析 (新增)
+        if week.daily_breakdown.len() >= 7 {
+            let first_half: u32 = week.daily_breakdown[0..3].iter().sum();
+            let second_half: u32 = week.daily_breakdown[4..7].iter().sum();
+
+            if second_half as f32 > first_half as f32 * 1.3 {
+                insights.push(UsageInsight {
+                    level: InsightLevel::Moderate,
+                    insight_type: "依赖度上升".to_string(),
+                    message: format!(
+                        "本周后半段使用量比前半段增加了 {:.0}%。\n\
+                         依赖曲线正在爬升。\n\
+                         如Bloomberg所说：「那条红色的依赖曲线，是文明进步的标志」。\n\
+                         但您确定要庆祝吗？",
+                        ((second_half as f32 / first_half as f32) - 1.0) * 100.0
+                    ),
+                    evidence: format!("前3天: {}min, 后3天: {}min", first_half, second_half),
+                });
+            }
+        }
+
         insights
+    }
+
+    /// 计算主权等级
+    fn calculate_sovereignty_level(avg_session_minutes: f32) -> &'static str {
+        match avg_session_minutes {
+            x if x < 1.0 => "生物电池 (Battery)",
+            x if x < 3.0 => "反射弧 (Reflex Arc)",
+            x if x < 10.0 => "浅层用户 (Shallow User)",
+            x if x < 30.0 => "中度使用 (Moderate User)",
+            _ => "主权人类 (Sovereign Human)",
+        }
+    }
+
+    /// 生成主权等级评定
+    fn generate_sovereignty_rating(
+        avg_session: f32,
+        avg_daily: f32,
+        session_count: u32,
+    ) -> UsageInsight {
+        let level_name = Self::calculate_sovereignty_level(avg_session);
+
+        let (level, message) = match level_name {
+            "生物电池 (Battery)" => (
+                InsightLevel::Sharp,
+                format!(
+                    "主权等级评定：{}\n\
+                     {} 次会话，平均 {:.1} 分钟。\n\
+                     您的使用模式：问→答→下一个（无思考间隔）。\n\
+                     黄世光的标准：30秒 = 生物电池，30分钟 = 主权人类。\n\
+                     建议：下次提问前，先自己想30秒。",
+                    level_name,
+                    session_count,
+                    avg_session
+                )
+            ),
+            "反射弧 (Reflex Arc)" => (
+                InsightLevel::Sharp,
+                format!(
+                    "主权等级评定：{}\n\
+                     平均会话 {:.1} 分钟，属于「快餐式提问」。\n\
+                     您在使用AI，但大脑基本不参与。\n\
+                     升级建议：尝试将平均会话时长提升到10分钟以上。",
+                    level_name,
+                    avg_session
+                )
+            ),
+            "浅层用户 (Shallow User)" => (
+                InsightLevel::Moderate,
+                format!(
+                    "主权等级评定：{}\n\
+                     平均会话 {:.1} 分钟，有一定思考，但仍偏向快速获取答案。\n\
+                     您还保留一些主权意识，但距离「主权人类」还有距离。\n\
+                     继续努力，目标是平均会话30分钟。",
+                    level_name,
+                    avg_session
+                )
+            ),
+            "中度使用 (Moderate User)" => (
+                InsightLevel::Gentle,
+                format!(
+                    "主权等级评定：{}\n\
+                     平均会话 {:.1} 分钟，这是相对健康的使用模式。\n\
+                     您在使用AI时保持了一定的深度思考。\n\
+                     继续保持，您距离「主权人类」只有一步之遥。",
+                    level_name,
+                    avg_session
+                )
+            ),
+            _ => (
+                InsightLevel::Gentle,
+                format!(
+                    "主权等级评定：{} ⭐\n\
+                     平均会话 {:.1} 分钟！这是罕见的深度使用模式。\n\
+                     您不是在「问答案」，而是在「与AI辩论」。\n\
+                     恭喜，您属于那1%保有完整认知主权的人类。\n\
+                     继续保持，这个世界需要更多像您这样的人。",
+                    level_name,
+                    avg_session
+                )
+            ),
+        };
+
+        UsageInsight {
+            level,
+            insight_type: "主权等级".to_string(),
+            message,
+            evidence: format!(
+                "会话: {:.1}min, 日均: {:.1}min, 等级: {}",
+                avg_session, avg_daily, level_name
+            ),
+        }
     }
 
     /// 生成洞察摘要文本
