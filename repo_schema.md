@@ -34,8 +34,11 @@ ACSA/
 ├── docs/                              # 📚 文档中心
 │   ├── README.md                      # 文档索引
 │   ├── guides/                        # 使用指南
-│   │   ├── COGNITIVE_CLEANER_GUIDE.md
-│   │   ├── DICTIONARY_FORMAT.md
+│   │   ├── COGNITIVE_CLEANER_GUIDE.md # 认知清洗系统使用指南
+│   │   ├── DICTIONARY_FORMAT.md       # 字典文件格式说明
+│   │   ├── WINDOWS_BUILD_FIX.md       # 🆕 Windows 编译修复完全指南
+│   │   ├── MCP_INTEGRATION_GUIDE.md   # 🆕 MCP 集成指南（含安全警告）
+│   │   ├── LSP_SERVER_GUIDE.md        # 🆕 LSP 服务器指南
 │   │   └── LEGAL_DISCLAIMER.md        # ⚖️ 法律免责声明
 │   ├── drafts/                        # 草稿（历史文档）
 │   ├── PROJECT_SUMMARY.md             # 项目总结
@@ -83,6 +86,95 @@ ACSA采用**模块化、事件驱动、异步优先**的架构：
 │                                                           │
 └─────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 🖥️ UI 架构（2025-12 更新）
+
+ACSA 现在支持两种 UI 模式：
+
+### Desktop GUI (Dioxus 0.7)
+**文件**: `o_sovereign_rust/src/bin/desktop.rs`
+
+**技术栈**:
+- Dioxus 0.7（React-like 框架）
+- WebView2（Windows 原生渲染）
+- 特性标志：`--features ui`
+
+**运行**:
+```bash
+cargo run --bin o-sovereign-desktop --features ui
+```
+
+### Terminal TUI (Ratatui 0.29)
+**文件**: `o_sovereign_rust/src/bin/tui.rs`
+
+**技术栈**:
+- Ratatui 0.29（tui-rs 继任者）
+- Crossterm 0.28（跨平台终端控制）
+- 特性标志：`--features ui`
+
+**运行**:
+```bash
+cargo run --bin o-sovereign-tui --features ui
+```
+
+**重要变更**:
+- ⚠️ Dioxus TUI 已在 0.5 版本移除（[Issue #2620](https://github.com/DioxusLabs/dioxus/issues/2620)）
+- ✅ 现在使用 Ratatui 作为终端 UI 解决方案
+- ✅ Desktop 使用 Dioxus 0.7 + WebView2
+
+---
+
+## 🔌 协议支持
+
+### MCP (Model Context Protocol)
+**文件**: `o_sovereign_rust/src/core/mcp_server.rs`
+**版本**: 2025-11-25（最新规范）
+
+**功能**:
+- ✅ **Tools**: 允许 AI 调用 ACSA 功能（协议切换、任务追踪等）
+- ✅ **Resources**: 提供可读取的数据源（审计日志、配置文件等）
+- ✅ **Prompts**: 预定义提示模板（战略分析、安全审计等）
+
+**平台集成**:
+- Google (Drive, Calendar)
+- GitHub (Repository, Issues)
+- Slack, Notion, Jira
+- 网盘服务（Dropbox, OneDrive）
+
+**⚠️ 安全警告**:
+> **不可信的网站或服务可能会诱导 AI 代理分享敏感数据**
+>
+> - 仅连接可信的 MCP 服务器和工具
+> - 使用受限的 API 密钥
+> - 隔离敏感数据
+> - 审查工具行为
+> - 网络隔离
+
+**文档**: [MCP 集成指南](docs/guides/MCP_INTEGRATION_GUIDE.md)
+
+### LSP (Language Server Protocol)
+**文件**: `o_sovereign_rust/src/core/lsp_server.rs`
+
+**功能**:
+- ✅ 代码补全（Completion）
+- ✅ 诊断（Diagnostics）
+- ✅ 定义跳转（Go to Definition）
+- ✅ 悬停提示（Hover）
+
+**支持编辑器**:
+- VS Code
+- Neovim
+- Emacs
+- Vim
+- Sublime Text
+
+**文件类型**:
+- Rust (.rs)
+- TOML (ACSA 配置文件)
+
+**文档**: [LSP 服务器指南](docs/guides/LSP_SERVER_GUIDE.md)
 
 ---
 
@@ -394,10 +486,15 @@ cargo doc --no-deps --open
 
 ## 📝 版本历史
 
-**v0.1.0** (2025-12)
+**v0.1.0** (2025-12-26)
 - ✅ 主权模式与认知疫苗系统
 - ✅ MOSS数据洞察（11种检测）
-- ✅ 关键bug修复
+- ✅ **UI架构升级**: Dioxus 0.7 + Ratatui 0.29
+- ✅ 关键bug修复（panic、竞态、内存泄漏、Protocol/Performance测试）
+- ✅ **Windows编译完全指南**（含编译优化技巧）
+- ✅ **MCP集成指南**（含安全警告）
+- ✅ **LSP服务器指南**（编辑器集成）
+- ✅ 修复Desktop启动错误和TUI光标显示
 - ✅ Apache 2.0 License
 - ✅ 文档重组
 - ✅ 一键启动脚本
