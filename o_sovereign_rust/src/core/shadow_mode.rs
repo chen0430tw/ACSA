@@ -312,6 +312,9 @@ impl ShadowModeEngine {
             info!("🔍 Detected {} PII instances", detections.len());
         }
 
+        // 按出现位置排序（HashMap迭代顺序不保证）
+        detections.sort_by_key(|d| d.start_pos);
+
         detections
     }
 
