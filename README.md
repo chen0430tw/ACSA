@@ -143,6 +143,8 @@ Redis分布式锁、服务发现和集群管理。
 - **Rate Limiter**：多层级速率限制（Global/IP/User/Endpoint）
 - **Metrics Collector**：Prometheus指标导出
 
+> **⚠️ 设计限制**: MOSS (战略规划Agent) 被永久禁止参与UI/审美决策。原因：在另一个平行世界，Master曾尝试让MOSS设计界面，结果得到了一个充满闪烁GIF、自动播放音乐和"恭喜中奖"弹窗的"澳门线上赌场"风格悲剧。从那以后，UI设计由人类负责。MOSS擅长逻辑和战略，但审美...还是算了吧。
+
 ---
 
 ## 🚀 快速开始
