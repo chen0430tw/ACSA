@@ -8,10 +8,12 @@ description = "ACSA (对抗约束型盲从代理) - Adversarially-Constrained Sy
 [[bin]]
 name = "o-sovereign-desktop"
 path = "src/bin/desktop.rs"
+required-features = ["ui"]
 
 [[bin]]
 name = "o-sovereign-tui"
 path = "src/bin/tui.rs"
+required-features = ["ui"]
 
 [dependencies]
 # Async runtime (upgraded with tracing support)
@@ -35,9 +37,10 @@ thiserror = "1.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "ansi", "json"] }
 
-# UI frameworks (optional)
+# UI frameworks (optional - only compiled when 'ui' feature is enabled)
 dioxus = { version = "0.5", optional = true }
 dioxus-desktop = { version = "0.5", optional = true }
+dioxus-tui = { version = "0.5", optional = true }
 
 # CLI (upgraded)
 clap = { version = "4.5", features = ["derive", "cargo"] }
@@ -70,7 +73,7 @@ metrics-exporter-prometheus = { version = "0.15", optional = true }
 
 [features]
 default = ["server"]
-ui = ["dioxus", "dioxus-desktop"]
+ui = ["dioxus", "dioxus-desktop", "dioxus-tui"]
 server = ["axum", "tower", "tower-http"]
 metrics = ["dep:metrics", "metrics-exporter-prometheus"]
 full = ["ui", "server", "metrics"]

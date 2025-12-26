@@ -1,10 +1,27 @@
 # ACSA (O-Sovereign)
 
-**Advanced Corporate System Automation - 企业级AI自动化管理平台**
+> **企业级AI自主决策框架** - 让AI系统在受控环境下自主运行，实现企业流程自动化、风险管理和智能决策。
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/acsa-project/acsa)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/acsa-project/acsa/releases)
+
+## 💡 这是什么？
+
+**ACSA** (Advanced Corporate System Automation) 是一个用 **Rust** 编写的企业级AI管理平台，旨在帮助组织在**安全可控**的环境下部署AI自动化系统。
+
+**核心能力：**
+- 🤖 **多AI协同**：支持 OpenAI、Claude、Gemini、DeepSeek、SiliconFlow、OpenRouter 6大AI提供商
+- 🛡️ **安全防护**：自动脱敏PII、审计日志、熔断保护、合规监控
+- 🔄 **流程自动化**：智能化的业务流程管理和优化
+- 📊 **分布式部署**：Redis集群、服务发现、Leader选举
+- 🔌 **协议支持**：MCP (Model Context Protocol) + LSP (Language Server Protocol)
+
+**适用场景：**
+- ✅ 企业数字化转型和流程优化
+- ✅ 授权安全测试和漏洞研究
+- ✅ AI对齐和人机交互研究
+- ✅ 网络安全教育和CTF竞赛
 
 ---
 
@@ -229,19 +246,42 @@ mcp_server.register_tool(github_tool, GitHubHandler::new()).await;
 
 ```bash
 # 克隆仓库
-git clone https://github.com/acsa-project/acsa.git
-cd acsa
+git clone https://github.com/chen0430tw/ACSA.git
+cd ACSA
 
 # 构建项目
 cd o_sovereign_rust
+
+# 方式1：仅构建核心功能（推荐，适用于服务器部署）
 cargo build --release
+
+# 方式2：包含图形界面（需要额外依赖 dioxus）
+cargo build --release --features ui
+
+# 方式3：完整构建（所有功能）
+cargo build --release --features full
 
 # 运行测试
 cargo test
 
-# 运行 (命令行模式)
+# 运行 (CLI 命令行模式)
 cargo run --bin o-sovereign-cli
+
+# 运行 (桌面图形界面 - 需要先用 --features ui 编译)
+cargo run --bin o-sovereign-desktop --features ui
+
+# 运行 (终端UI - 需要先用 --features ui 编译)
+cargo run --bin o-sovereign-tui --features ui
 ```
+
+**⚠️ Windows 用户注意：**
+
+如果遇到 `dioxus` 相关编译错误，请确保：
+1. **使用默认构建**（不包含 UI）：`cargo build --release`
+2. **如需 UI 功能**，明确指定 feature：`cargo build --release --features ui`
+3. **安装 Visual Studio 2022 Build Tools**（含 C++ 工作负载）
+
+详见：[Windows 编译报告](ACSA编译报告.txt)
 
 ### 基础配置
 
