@@ -56,8 +56,8 @@ chrono = { version = "0.4", features = ["serde", "clock"], default-features = fa
 # Async traits
 async-trait = "0.1"
 
-# Regex (optimized with perf features)
-regex = { version = "1.11", default-features = false, features = ["std", "perf"] }
+# Regex (optimized with perf features + unicode support for \d patterns)
+regex = { version = "1.11", default-features = false, features = ["std", "perf", "unicode-perl"] }
 
 # Base64 encoding (unified version)
 base64 = "0.22"
