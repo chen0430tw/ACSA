@@ -2,9 +2,30 @@
 
 **Advanced Corporate System Automation - 企业级AI自动化管理平台**
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/acsa-project/acsa)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/acsa-project/acsa/releases)
+
+---
+
+## ⚡ 快速开始（一键启动）
+
+```bash
+# 克隆项目
+git clone https://github.com/your-org/ACSA.git
+cd ACSA
+
+# 一键启动（自动检查环境、构建、运行）
+./quick-start.sh
+```
+
+**脚本功能：**
+- ✅ 自动检查 Rust/Cargo 环境
+- ✅ 自动构建项目（Release模式）
+- ✅ 提供多种运行选项（CLI/测试/文档）
+- ✅ 配置文件自动生成
+
+**手动安装：** 详见 [完整安装指南](#-快速开始)
 
 ---
 
@@ -73,8 +94,8 @@ ACSA (O-Sovereign) 是一个**企业级AI管理框架**，旨在帮助组织实�
 - **字典导入**：支持 TXT/JSON/DIC/CSV 格式自定义（⚠️ 用户自主行为，需自行负责）
 
 **文档：**
-- [使用指南](COGNITIVE_CLEANER_GUIDE.md)
-- [字典格式说明](DICTIONARY_FORMAT.md)
+- [使用指南](docs/guides/COGNITIVE_CLEANER_GUIDE.md)
+- [字典格式说明](docs/guides/DICTIONARY_FORMAT.md)
 - [示例字典](dictionaries/examples/)
 
 **代码位置：** `src/core/cognitive_cleaner.rs`
@@ -214,7 +235,7 @@ cleaner.import_multiple_dictionaries(vec![
 ```
 
 **⚠️ 重要提示：**
-> 通过字典导入功能添加的内容为**用户自主行为**，用户需对导入内容的合法性、合规性和道德性负完全责任。系统开发者对用户导入的内容不承担任何责任。详见 [法律免责声明](LEGAL_DISCLAIMER.md)。
+> 通过字典导入功能添加的内容为**用户自主行为**，用户需对导入内容的合法性、合规性和道德性负完全责任。系统开发者对用户导入的内容不承担任何责任。详见 [法律免责声明](docs/guides/LEGAL_DISCLAIMER.md)。
 
 #### 3. 使用影子模式保护数据
 
@@ -241,11 +262,12 @@ println!("{}", protected_text);
 ## 📚 文档索引
 
 ### 用户文档
-- [认知清洗系统使用指南](COGNITIVE_CLEANER_GUIDE.md) ✅
-- [字典文件格式说明](DICTIONARY_FORMAT.md) ✅
+- [认知清洗系统使用指南](docs/guides/COGNITIVE_CLEANER_GUIDE.md) ✅
+- [字典文件格式说明](docs/guides/DICTIONARY_FORMAT.md) ✅
+- [文档索引](docs/README.md) ✅
 
 ### 法律与合规
-- [法律免责声明](LEGAL_DISCLAIMER.md) ✅
+- [法律免责声明](docs/guides/LEGAL_DISCLAIMER.md) ✅
 
 ---
 
@@ -284,7 +306,7 @@ println!("{}", protected_text);
 - ❌ 不对使用产生的任何损失负责
 - ❌ 不提供任何明示或暗示的保证
 
-**详细条款请阅读：** [LEGAL_DISCLAIMER.md](LEGAL_DISCLAIMER.md)
+**详细条款请阅读：** [LEGAL_DISCLAIMER.md](docs/guides/LEGAL_DISCLAIMER.md)
 
 **继续使用即表示您已阅读并同意所有条款。**
 
