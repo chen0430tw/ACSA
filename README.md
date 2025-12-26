@@ -72,8 +72,34 @@ quick-start.bat
 - ✅ 自动检测操作系统（Linux/macOS/Windows）
 - ✅ 自动检查 Rust/Cargo 环境
 - ✅ 自动构建项目（Release模式）
-- ✅ 提供多种运行选项（CLI/测试/文档）
+- ✅ 提供多种运行选项（TUI/Desktop/测试/文档）
 - ✅ 配置文件自动生成
+
+### 🎯 启动后做什么？
+
+**首次使用必读：** [📘 新手入门指南](docs/guides/GETTING_STARTED.md)
+
+**快速说明：**
+
+1. **默认是 Mock 模式** - 免费测试，不需要 API 密钥
+   - ✅ 快速体验 ACSA 工作流程
+   - ✅ 学习四大 Agent 协作机制
+   - ❌ 不是真实 AI（使用模拟数据）
+
+2. **配置真实 API** - 解锁完整功能
+   ```bash
+   # 创建 .env 文件
+   echo 'OPENAI_API_KEY=sk-your-key-here' > .env
+   # 或使用 DeepSeek（国内推荐）
+   echo 'DEEPSEEK_API_KEY=your-key' > .env
+   ```
+   - 重启应用后取消勾选 "Mock Mode"
+   - 详细步骤见 [新手入门指南](docs/guides/GETTING_STARTED.md#第三步配置真实-api可选)
+
+3. **如果看到 "Blocked/已阻止"**
+   - 这是 Jarvis 安全熔断器在工作
+   - 避免危险关键词（删除、攻击、病毒等）
+   - 或降低 Risk Threshold 滑块
 
 **手动安装：** 详见 [手动安装与配置](#-手动安装与配置)
 
