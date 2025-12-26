@@ -263,6 +263,102 @@ choco install webview2-runtime -y
 1. 使用 WSL2 方案（约 2 GB）
 2. 仅安装核心版本（不含 UI）
 
+### Q6: PowerShell 脚本报错 "未预期的 '}' 语汇基元" / "缺少 '}'"？
+
+**A:** 这是 **Windows PowerShell 5.1** 的 UTF-8 编码解析问题（PowerShell 7 无此问题）。
+
+**症状**：
+```
+位於 C:\...\quick-start.ps1:125 字元:1
++ }
++ ~
+運算式或陳述式中有未預期的 '}' 語彙基元。
+```
+
+**根本原因**：
+- 脚本包含中文和 Unicode 字符（✓ ✗ ⚠）
+- 文件保存为 **UTF-8 无 BOM**
+- Windows PowerShell 5.1 会按 ANSI codepage 误解码
+- 解析器读错字符 → 括号对不上 → 连锁报错
+
+**解决方案 A：重新保存为 UTF-8 with BOM**（推荐）
+
+```powershell
+# 按字节加 BOM（最稳定）
+$path = ".\quick-start.ps1"
+$bytes = [System.IO.File]::ReadAllBytes($path)
+
+# 去除已有 BOM（如果有）
+if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+  $bytes = $bytes[3..($bytes.Length-1)]
+}
+
+# 写回：BOM + 原始内容
+[System.IO.File]::WriteAllBytes($path, @(0xEF,0xBB,0xBF) + $bytes)
+```
+
+**解决方案 B：使用 PowerShell 7**（推荐）
+
+```powershell
+# 安装 PowerShell 7
+winget install --id Microsoft.PowerShell --source winget
+
+# 然后用 pwsh 运行
+pwsh -ExecutionPolicy Bypass -File .\quick-start.ps1
+```
+
+**解决方案 C：临时执行策略 + 忽略编码问题**
+
+```powershell
+# 设置临时执行策略
+Set-ExecutionPolicy Bypass -Scope Process
+
+# 直接运行（如果内容已正确）
+.\quick-start.ps1
+```
+
+**参考**：
+- [Microsoft Learn: PowerShell 5.1 UTF-8 解析问题](https://learn.microsoft.com/en-us/answers/questions/3850223/powershell-5-1-parser-bug-failure-to-parse-utf-8)
+- [Microsoft Learn: 文件编码说明](https://learn.microsoft.com/en-us/powershell/scripting/dev-cross-plat/vscode/understanding-file-encoding)
+
+### Q7: 如何切换界面语言？UI 为什么是英文？
+
+**A:** ACSA 包含完整的 i18n 国际化模块（支持中文、英文、日文、韩文），但 **目前 Desktop 和 TUI 界面尚未集成语言切换功能**。
+
+**当前状态**：
+- ✅ **i18n 模块已实现**：`src/core/i18n.rs`
+- ✅ **支持 4 种语言**：简体中文（zh-CN）、英文（en-US）、日文（ja-JP）、韩文（ko-KR）
+- ❌ **UI 集成待完成**：Desktop 和 TUI 界面暂未调用 i18n 模块
+
+**临时解决方案**（开发者）：
+
+如果你需要在代码中使用 i18n，可以这样调用：
+
+```rust
+use acsa_core::{I18n, Language};
+
+// 创建中文 i18n 实例
+let i18n = I18n::new(Language::ChineseSimplified);
+
+// 获取翻译
+let welcome = i18n.t(TranslationKey::Welcome);
+println!("{}", welcome); // 输出：欢迎使用 ACSA
+
+// 切换语言
+i18n.set_language(Language::EnglishUS);
+let welcome_en = i18n.t(TranslationKey::Welcome);
+println!("{}", welcome_en); // 输出：Welcome to ACSA
+```
+
+**未来计划**：
+- 🔄 在 Desktop/TUI 界面添加语言选择菜单
+- 🔄 记住用户语言偏好设置
+- 🔄 支持系统语言自动检测
+
+**代码位置**：
+- i18n 模块：`o_sovereign_rust/src/core/i18n.rs`
+- 测试代码：同文件末尾（包含所有语言测试）
+
 ## 编译时间与优化
 
 ### 为什么 Rust 编译这么慢？
