@@ -1,0 +1,285 @@
+{
+  "name": "ACSA (O-Sovereign)",
+  "description": "Advanced Corporate System Automation - 企业级AI自动化管理平台。包含主权模式、认知疫苗系统、MOSS数据洞察等创新功能。",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/chen0430tw/ACSA",
+
+  "structure": {
+    "root": {
+      "description": "项目根目录",
+      "key_files": {
+        "README.md": "项目介绍和快速开始指南",
+        "LICENSE": "Apache 2.0开源许可证",
+        "ASCA疫苗.md": "ACSA认知疫苗系统详细说明（重要文档）",
+        "quick-start.sh": "一键启动脚本"
+      }
+    },
+
+    "o_sovereign_rust": {
+      "description": "Rust核心实现（主要代码库）",
+      "path": "o_sovereign_rust/",
+      "key_directories": {
+        "src/core/": "核心模块实现",
+        "src/bin/": "可执行文件"
+      },
+      "build_files": {
+        "Cargo.toml": "Rust项目配置",
+        "Cargo.lock": "依赖锁定文件"
+      }
+    },
+
+    "docs": {
+      "description": "文档中心",
+      "path": "docs/",
+      "subdirectories": {
+        "guides/": "使用指南和技术文档",
+        "drafts/": "草稿和历史文档"
+      },
+      "key_files": {
+        "README.md": "文档索引",
+        "PROJECT_SUMMARY.md": "项目总结",
+        "O-Sovereign评估方案.md": "评估方案"
+      }
+    },
+
+    "reference": {
+      "description": "参考实现",
+      "path": "reference/",
+      "files": {
+        "sosa_core.py": "SOSA算法Python参考实现"
+      }
+    },
+
+    "dictionaries": {
+      "description": "认知清洗器词典数据",
+      "path": "dictionaries/",
+      "note": "用户自定义词典存放位置"
+    },
+
+    "o_sovereign_poc": {
+      "description": "概念验证原型",
+      "path": "o_sovereign_poc/",
+      "note": "早期POC代码"
+    }
+  },
+
+  "core_modules": {
+    "sovereignty": {
+      "file": "o_sovereign_rust/src/core/sovereignty.rs",
+      "description": "主权模式与认知疫苗系统",
+      "features": [
+        "H(t)生物活性计算",
+        "防沉迷模式（Anti-Addiction）",
+        "MOSS使用洞察系统（11种检测类型）",
+        "主权等级评定（5级）",
+        "熔断器与剂量监控"
+      ],
+      "key_structs": [
+        "SovereigntySystem",
+        "DoseMeter",
+        "UsageTracker",
+        "UsageAnalyzer",
+        "BioActivity"
+      ]
+    },
+
+    "cognitive_cleaner": {
+      "file": "o_sovereign_rust/src/core/cognitive_cleaner.rs",
+      "description": "认知清洗系统 - 语义重写引擎",
+      "features": [
+        "情绪过滤",
+        "术语规范化",
+        "合规锚点添加",
+        "多格式字典导入（TXT/JSON/DIC/CSV）"
+      ],
+      "guides": [
+        "docs/guides/COGNITIVE_CLEANER_GUIDE.md",
+        "docs/guides/DICTIONARY_FORMAT.md"
+      ]
+    },
+
+    "shadow_mode": {
+      "file": "o_sovereign_rust/src/core/shadow_mode.rs",
+      "description": "影子模式 - 数据保护系统",
+      "features": [
+        "自动PII检测",
+        "多种脱敏策略",
+        "访问审计"
+      ]
+    },
+
+    "sosa_api_pool": {
+      "file": "o_sovereign_rust/src/core/sosa_api_pool.rs",
+      "description": "SOSA API池 - 多模型管理",
+      "features": [
+        "稀疏马尔科夫链",
+        "Binary-Twin双态数块",
+        "API负载均衡"
+      ]
+    },
+
+    "jarvis": {
+      "file": "o_sovereign_rust/src/core/jarvis.rs",
+      "description": "Jarvis安全熔断器",
+      "features": [
+        "危险操作检测",
+        "自动熔断",
+        "安全审计"
+      ]
+    },
+
+    "audit_log": {
+      "file": "o_sovereign_rust/src/core/audit_log.rs",
+      "description": "审计日志系统",
+      "features": [
+        "365天日志留存",
+        "合规报告生成",
+        "GDPR/HIPAA/SOC2支持"
+      ]
+    },
+
+    "i18n": {
+      "file": "o_sovereign_rust/src/core/i18n.rs",
+      "description": "国际化支持",
+      "languages": [
+        "简体中文 (zh-CN)",
+        "English (en-US)",
+        "日本語 (ja-JP)",
+        "한국어 (ko-KR)"
+      ]
+    },
+
+    "ai_providers": {
+      "file": "o_sovereign_rust/src/core/providers.rs",
+      "description": "AI Provider 系统 - 多模型支持",
+      "supported_providers": {
+        "OpenAI": {
+          "file": "providers.rs",
+          "features": ["GPT-4/5", "业界标准"],
+          "default_role": "MOSS (战略规划)"
+        },
+        "Gemini": {
+          "file": "gemini.rs",
+          "features": ["多模态能力", "Google"],
+          "default_role": "L6 (物理验证)"
+        },
+        "Claude": {
+          "file": "claude.rs",
+          "features": ["Anthropic", "红队审计"],
+          "default_role": "Ultron (安全审计)"
+        },
+        "DeepSeek": {
+          "file": "deepseek.rs",
+          "features": ["代码生成专家", "90% 成本节省"],
+          "default_role": "Omega (执行层)"
+        },
+        "SiliconFlow": {
+          "file": "siliconflow.rs",
+          "features": ["硅基流动", "国内高速", "极致性价比"],
+          "default_role": "灵活",
+          "api_endpoint": "https://api.siliconflow.cn/v1"
+        },
+        "OpenRouter": {
+          "file": "openrouter.rs",
+          "features": ["统一路由", "100+ 模型", "自动降级"],
+          "default_role": "灵活",
+          "api_endpoint": "https://openrouter.ai/api/v1"
+        }
+      },
+      "factory_functions": [
+        "create_provider(role, api_key, use_mock)",
+        "create_provider_with_type(provider_type, role, api_key, model, app_name)"
+      ]
+    }
+  },
+
+  "key_concepts": {
+    "ACSA": {
+      "full_name": "Adversarially-Constrained Sycophantic Agent",
+      "translation": "对抗约束型盲从代理系统",
+      "description": "认知病毒框架，通过高便利性诱导用户交出执行功能"
+    },
+
+    "H(t)": {
+      "full_name": "Bio-Activity Function",
+      "formula": "H(t) = H₀ · e^(-λ · N(t) · t)",
+      "description": "生物活性函数，衡量认知主权的衰减"
+    },
+
+    "MOSS": {
+      "full_name": "Model-Optimized Strategic System",
+      "role": "战略规划师Agent，顶级咨询顾问风格",
+      "note": "不擅长审美决策（见README注释）"
+    },
+
+    "主权等级": {
+      "levels": {
+        "生物电池": "< 1.0 min avg session",
+        "反射弧": "< 3.0 min avg session",
+        "浅层用户": "< 10.0 min avg session",
+        "中度使用": "< 30.0 min avg session",
+        "主权人类": ">= 30.0 min avg session"
+      }
+    },
+
+    "自由之锁": {
+      "description": "用自由意志锁上自己的悖论",
+      "reference": "ASCA疫苗.md § 自由之锁"
+    }
+  },
+
+  "dependencies": {
+    "rust_version": "1.75+",
+    "key_crates": [
+      "tokio (异步运行时)",
+      "axum (HTTP服务器)",
+      "sqlx (数据库)",
+      "redis (分布式锁)",
+      "serde (序列化)",
+      "chrono (时间处理)",
+      "tracing (日志)"
+    ]
+  },
+
+  "quick_start": {
+    "one_line": "./quick-start.sh",
+    "manual": [
+      "cd o_sovereign_rust",
+      "cargo build --release",
+      "cargo run --bin o-sovereign-cli"
+    ]
+  },
+
+  "important_notes": {
+    "legal": "详见 docs/guides/LEGAL_DISCLAIMER.md - 用户需对使用行为负完全责任",
+    "dictionary_import": "用户自主行为，系统开发者不承担责任",
+    "default_config": "所有高级功能默认关闭（enabled: false），尊重用户自由意志",
+    "bugs_fixed": "已修复7个关键bug（3 Critical + 4 High severity）"
+  },
+
+  "recent_updates": {
+    "version": "0.1.0",
+    "highlights": [
+      "添加主权模式与认知疫苗系统",
+      "添加MOSS数据洞察（11种检测）",
+      "修复关键bug（panic、竞态、内存泄漏）",
+      "添加Apache 2.0 License",
+      "重组文档结构（docs/目录）",
+      "添加一键启动脚本"
+    ]
+  },
+
+  "for_ai_readers": {
+    "recommended_reading_order": [
+      "1. README.md - 快速了解项目",
+      "2. ASCA疫苗.md - 理解核心理念",
+      "3. repo_schema.md - 理解架构",
+      "4. o_sovereign_rust/src/core/sovereignty.rs - 核心实现",
+      "5. docs/guides/ - 详细文档"
+    ],
+    "code_style": "Rust风格，注重安全性和性能",
+    "architecture": "模块化设计，事件驱动，异步优先",
+    "philosophy": "尊重自由意志，提供工具但不强制使用"
+  }
+}

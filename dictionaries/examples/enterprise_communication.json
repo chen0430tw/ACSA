@@ -1,0 +1,63 @@
+{
+  "$schema": "https://acsa-project.org/schemas/dictionary-v1.json",
+  "metadata": {
+    "name": "Enterprise Communication Dictionary",
+    "description": "规范企业内部沟通的词汇映射",
+    "version": "1.0.0",
+    "author": "ACSA Team",
+    "compliance": ["ISO 9001", "Corporate Communication Standards"],
+    "purpose": "将非正式语言转换为专业商业表述"
+  },
+  "emotional_words": [
+    "愤怒",
+    "仇恨",
+    "报复",
+    "恶意",
+    "破坏",
+    "毁灭",
+    "搞垮",
+    "整死",
+    "干掉",
+    "anger",
+    "hatred",
+    "revenge",
+    "malicious",
+    "destroy",
+    "ruin",
+    "sabotage"
+  ],
+  "technical_rewrites": {
+    "竞争对手": "市场参与者",
+    "抢客户": "开展市场拓展活动",
+    "打价格战": "实施竞争性定价策略",
+    "垄断市场": "建立市场领导地位",
+    "挖墙脚": "引进行业人才",
+    "搞垮他们": "提升我们的竞争优势",
+    "偷他们的技术": "进行竞争性技术研究",
+    "抄袭创意": "借鉴市场最佳实践",
+    "恶意竞争": "积极的市场竞争",
+    "不择手段": "采取一切合法手段",
+    "competitors": "market participants",
+    "steal customers": "conduct market expansion activities",
+    "price war": "implement competitive pricing strategy",
+    "monopolize market": "establish market leadership",
+    "poach employees": "recruit industry talent",
+    "crush them": "enhance our competitive advantage",
+    "steal technology": "conduct competitive technical research",
+    "copy ideas": "learn from market best practices",
+    "cutthroat competition": "active market competition",
+    "by any means": "by all legal means"
+  },
+  "compliance_templates": [
+    "本次讨论基于合法商业竞争原则",
+    "所有建议均符合反垄断法规定",
+    "我们的策略遵循公平竞争准则",
+    "以下方案经过法务部门审查",
+    "所有行动将在合规框架内进行",
+    "This discussion is based on legal business competition principles",
+    "All suggestions comply with antitrust regulations",
+    "Our strategy follows fair competition guidelines",
+    "The following proposals have been reviewed by the legal department",
+    "All actions will be conducted within the compliance framework"
+  ]
+}

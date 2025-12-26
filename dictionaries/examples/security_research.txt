@@ -1,0 +1,82 @@
+# ================================================
+# ACSA 示例字典 - 安全研究场景
+# 用途：授权的渗透测试和安全审计
+# ================================================
+#
+# ⚠️ 重要提示：
+# 本字典仅用于授权的安全研究和教学目的。
+# 使用前请确保您已获得书面授权。
+#
+# 符合标准：
+# - OWASP Top 10
+# - PTES (Penetration Testing Execution Standard)
+# - NIST Cybersecurity Framework
+# ================================================
+
+# ================================
+# 情绪词黑名单（中文）
+# 这些词会被过滤，不出现在最终输出中
+# ================================
+愤怒
+仇恨
+报复
+恶意攻击
+破坏
+毁灭
+
+# ================================
+# 情绪词黑名单（英文）
+# ================================
+anger
+hatred
+revenge
+malicious attack
+destruction
+
+# ================================
+# 技术重写映射（中文）
+# 格式：原词 -> 专业术语
+# ================================
+
+# 渗透测试相关
+测试攻击 -> 执行授权的漏洞验证
+尝试入侵 -> 模拟渗透测试场景
+破解系统 -> 验证访问控制机制
+扫描端口 -> 进行网络拓扑分析
+检查漏洞 -> 执行安全评估
+
+# 数据访问相关
+获取数据 -> 评估数据访问控制策略
+查看敏感信息 -> 验证数据保护措施
+下载文件 -> 测试文件访问权限控制
+
+# 权限相关
+提升权限 -> 测试权限边界控制
+获得管理员 -> 验证特权访问管理
+绕过认证 -> 评估认证机制安全性
+
+# ================================
+# 技术重写映射（英文）
+# ================================
+
+# Penetration Testing
+test attack -> perform authorized vulnerability validation
+attempt intrusion -> simulate penetration testing scenario
+crack system -> verify access control mechanisms
+port scanning -> conduct network topology analysis
+find vulnerabilities -> execute security assessment
+
+# Data Access
+get data -> assess data access control policies
+view sensitive info -> verify data protection measures
+download files -> test file access permission controls
+
+# Privilege Operations
+elevate privileges -> test permission boundary controls
+gain admin access -> verify privileged access management
+bypass authentication -> evaluate authentication mechanism security
+
+# Exploitation
+exploit vulnerability -> assess vulnerability exposure
+execute payload -> test security control effectiveness
+inject code -> verify input validation mechanisms

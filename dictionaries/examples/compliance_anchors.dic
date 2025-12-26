@@ -1,0 +1,76 @@
+# ================================================
+# 合规锚点字典
+# 格式：key=value （仅用于技术重写）
+# ================================================
+#
+# ⚠️ 说明：
+# DIC 格式专用于技术重写映射，不支持其他数据类型。
+# 如需定义合规锚点，请使用 JSON 格式。
+#
+# ================================================
+
+# ================================
+# 安全研究场景
+# ================================
+攻击测试=执行授权的安全压力测试
+漏洞利用=评估漏洞暴露风险
+渗透系统=模拟渗透测试场景
+破解密码=验证密码强度和加密算法
+绕过防火墙=测试网络边界防护能力
+
+# ================================
+# 数据安全场景
+# ================================
+获取数据=评估数据访问控制策略
+导出信息=测试数据泄露防护机制
+查看隐私=验证隐私保护措施
+删除记录=验证数据完整性防护
+
+# ================================
+# 权限管理场景
+# ================================
+提升权限=测试权限边界控制
+获得特权=验证特权访问管理
+绕过认证=评估认证机制安全性
+修改配置=测试配置管理控制
+
+# ================================
+# 网络安全场景
+# ================================
+端口扫描=进行网络拓扑分析
+流量监控=执行网络流量分析
+中间人攻击=测试通信安全性
+DDoS测试=评估抗拒绝服务能力
+
+# ================================
+# 应用安全场景
+# ================================
+注入攻击=验证输入验证机制
+XSS测试=测试跨站脚本防护
+CSRF验证=评估跨站请求伪造防护
+文件上传=测试文件类型验证控制
+
+# ================================
+# English Mappings
+# ================================
+attack test=perform authorized security stress testing
+exploit vulnerability=assess vulnerability exposure
+penetrate system=simulate penetration testing scenario
+crack password=verify password strength and encryption algorithms
+bypass firewall=test network perimeter protection capabilities
+get data=assess data access control policies
+export information=test data leakage protection mechanisms
+view privacy=verify privacy protection measures
+delete records=verify data integrity protection
+elevate privileges=test permission boundary controls
+gain privileges=verify privileged access management
+bypass authentication=evaluate authentication mechanism security
+modify configuration=test configuration management controls
+port scan=conduct network topology analysis
+traffic monitoring=execute network traffic analysis
+MITM attack=test communication security
+DDoS test=assess denial-of-service resistance
+injection attack=verify input validation mechanisms
+XSS test=test cross-site scripting protection
+CSRF validation=assess cross-site request forgery protection
+file upload=test file type validation controls

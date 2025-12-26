@@ -1,0 +1,18 @@
+# O-Sovereign PoC 依赖
+
+# Web 框架
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.4.0
+
+# AI Model APIs
+openai>=1.3.0          # GPT-5.2 / GPT-4 (MOSS)
+google-generativeai>=0.3.0  # Gemini 3 Deep Think (L6), Gemini Flash (Omega)
+anthropic>=0.7.0       # Claude Opus 4.5 (Ultron)
+
+# 异步支持
+asyncio
+aiohttp>=3.9.0
+
+# 工具
+python-dotenv>=1.0.0   # 环境变量管理

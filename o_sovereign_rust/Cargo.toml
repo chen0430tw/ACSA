@@ -1,0 +1,93 @@
+[package]
+name = "o-sovereign"
+version = "0.1.0"
+edition = "2021"
+authors = ["O-Sovereign Team"]
+description = "ACSA (对抗约束型盲从代理) - Adversarially-Constrained Sycophantic Agent"
+
+[[bin]]
+name = "o-sovereign-desktop"
+path = "src/bin/desktop.rs"
+
+[[bin]]
+name = "o-sovereign-tui"
+path = "src/bin/tui.rs"
+
+[dependencies]
+# Async runtime (upgraded with tracing support)
+tokio = { version = "1.42", features = ["full", "tracing"] }
+
+# HTTP client (upgraded to fix duplicate versions)
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+# AI API clients
+async-openai = "0.20"  # OpenAI GPT-4/5
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging (optimized for performance)
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "ansi", "json"] }
+
+# UI frameworks (optional)
+dioxus = { version = "0.5", optional = true }
+dioxus-desktop = { version = "0.5", optional = true }
+
+# CLI (upgraded)
+clap = { version = "4.5", features = ["derive", "cargo"] }
+
+# Environment variables
+dotenv = "0.15"
+
+# Date/Time (optimized but keep clock feature for Utc::now())
+chrono = { version = "0.4", features = ["serde", "clock"], default-features = false }
+
+# Async traits
+async-trait = "0.1"
+
+# Regex (optimized with perf features)
+regex = { version = "1.11", default-features = false, features = ["std", "perf"] }
+
+# Base64 encoding (unified version)
+base64 = "0.22"
+
+# HTTP server (for http_server.rs)
+axum = { version = "0.7", optional = true }
+tower = { version = "0.5", optional = true }
+tower-http = { version = "0.6", features = ["cors", "trace"], optional = true }
+
+# Performance monitoring
+metrics = { version = "0.23", optional = true }
+metrics-exporter-prometheus = { version = "0.15", optional = true }
+
+# Note: LazyLock and OnceLock are in std since Rust 1.80
+
+[features]
+default = ["server"]
+ui = ["dioxus", "dioxus-desktop"]
+server = ["axum", "tower", "tower-http"]
+metrics = ["dep:metrics", "metrics-exporter-prometheus"]
+full = ["ui", "server", "metrics"]
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.8"
+
+[profile.release]
+opt-level = 3        # 最高优化级别
+lto = "fat"          # 完整LTO（链接时优化）
+codegen-units = 1    # 单个代码生成单元（更好的优化）
+strip = true         # 剥离符号
+panic = "abort"      # Panic时直接abort（减小二进制大小）
+
+[profile.dev]
+opt-level = 1        # 开发时也进行基本优化（提升响应速度）
+
+[profile.dev.package."*"]
+opt-level = 2        # 依赖项使用较高优化（加快开发时运行速度）
