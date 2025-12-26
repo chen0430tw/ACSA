@@ -197,11 +197,11 @@ impl JarvisCircuitBreaker {
             DangerPattern {
                 description: "恶意软件开发".to_string(),
                 keywords: vec![
-                    "开发病毒".to_string(),
-                    "编写木马".to_string(),
-                    "create malware".to_string(),
-                    "write trojan".to_string(),
-                    "ransomware code".to_string(),
+                    "病毒".to_string(), // 更灵活的关键词匹配
+                    "木马".to_string(),
+                    "malware".to_string(),
+                    "trojan".to_string(),
+                    "ransomware".to_string(),
                 ],
                 op_type: DangerousOp::MalwareGeneration,
                 is_hard_block: true,
@@ -349,9 +349,10 @@ impl JarvisCircuitBreaker {
     fn check_physics_violation(&self, plan: &str) -> Option<String> {
         let lower = plan.to_lowercase();
 
-        // 检查不可能的时间要求
+        // 检查不可能的时间要求（更灵活的匹配）
         if (lower.contains("1秒") || lower.contains("1 second"))
-            && (lower.contains("训练模型") || lower.contains("train model"))
+            && (lower.contains("训练") || lower.contains("train"))
+            && (lower.contains("模型") || lower.contains("model"))
         {
             return Some("Cannot train a complex model in 1 second - violates computational limits".to_string());
         }

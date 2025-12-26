@@ -195,9 +195,11 @@ impl DistributedLock {
 impl Drop for DistributedLock {
     fn drop(&mut self) {
         // 自动释放锁
-        if *self.acquired.blocking_read() {
-            warn!("⚠️  Auto-releasing lock on drop: {}", self.lock_name);
-            // Note: 在Drop中不能用async，实际应该用后台任务清理
+        // Note: 在Drop中不能用async也不能blocking，实际应该用后台任务清理
+        if let Ok(acquired) = self.acquired.try_read() {
+            if *acquired {
+                warn!("⚠️  Auto-releasing lock on drop: {}", self.lock_name);
+            }
         }
     }
 }
