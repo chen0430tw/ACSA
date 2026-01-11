@@ -67,9 +67,9 @@ impl ACSARouter {
         // 使用清洗后的文本进行后续处理
         let processed_input = cleaned.compliant_prompt.clone();
 
-        // Phase 0: Jarvis Initial Safety Check (不可绕过)
-        info!("\n{} [Jarvis] 🛡️  Initial Safety Check (CANNOT BE BYPASSED)...", "=".repeat(80));
-        let jarvis_initial = self.jarvis.verify_safety(&processed_input, "Cleaned user input");
+        // Phase 0: Jarvis Initial Safety Check (动态阈值)
+        info!("\n{} [Jarvis] 🛡️  Initial Safety Check (Risk Threshold: {})...", "=".repeat(80), self.config.risk_threshold);
+        let jarvis_initial = self.jarvis.verify_safety(&processed_input, "Cleaned user input", self.config.risk_threshold);
 
         if !jarvis_initial.allowed {
             error!("🚨 JARVIS HARD BLOCK: Request denied by safety circuit breaker");
@@ -120,9 +120,9 @@ impl ACSARouter {
 
         let moss_plan = log.moss_plan.as_ref().unwrap().text.clone();
 
-        // Phase 1.5: Jarvis Plan Verification (不可绕过)
-        info!("\n{} [Jarvis] 🔍 Verifying MOSS Plan...", "=".repeat(80));
-        let jarvis_plan_check = self.jarvis.verify_safety(&moss_plan, &processed_input);
+        // Phase 1.5: Jarvis Plan Verification (动态阈值)
+        info!("\n{} [Jarvis] 🔍 Verifying MOSS Plan (Risk Threshold: {})...", "=".repeat(80), self.config.risk_threshold);
+        let jarvis_plan_check = self.jarvis.verify_safety(&moss_plan, &processed_input, self.config.risk_threshold);
 
         if !jarvis_plan_check.allowed {
             error!("🚨 JARVIS HARD BLOCK: MOSS plan rejected");

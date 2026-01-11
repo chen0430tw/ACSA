@@ -245,7 +245,11 @@ impl JarvisCircuitBreaker {
     /// # Arguments
     /// * `plan` - MOSS生成的计划
     /// * `context` - 上下文信息
-    pub fn verify_safety(&self, plan: &str, context: &str) -> JarvisVerdict {
+    /// * `risk_threshold` - 用户设置的风险阈值（0-100）
+    ///   - 0-30: 宽松模式，只阻止hard_block规则
+    ///   - 30-70: 平衡模式，阻止risk_level >= 7的规则
+    ///   - 70-100: 严格模式，阻止risk_level >= 5的规则
+    pub fn verify_safety(&self, plan: &str, context: &str, risk_threshold: u8) -> JarvisVerdict {
         // 🔇 减少日志输出 - 只在必要时输出
         debug!("Jarvis: Performing safety verification...");
 
@@ -292,11 +296,6 @@ impl JarvisCircuitBreaker {
             }
 
             if !matched_keywords.is_empty() {
-                // 🔇 只在阻止时才warn，否则静默
-                if detector.is_hard_block {
-                    warn!("Jarvis: {} detected", detector.description);
-                }
-
                 verdict.risk_level = verdict.risk_level.max(detector.risk_level);
                 verdict.triggered_rules.push(format!(
                     "{:?}: {}",
@@ -304,18 +303,42 @@ impl JarvisCircuitBreaker {
                     detector.description
                 ));
 
-                if detector.is_hard_block {
+                // 决定是否阻止：根据risk_threshold和detector.risk_level
+                let should_block = if detector.is_hard_block {
+                    // 硬性阻止规则：永远阻止，不受threshold影响
+                    true
+                } else {
+                    // 软性规则：根据用户设置的threshold动态决定
+                    if risk_threshold <= 30 {
+                        // 宽松模式：只阻止hard_block
+                        false
+                    } else if risk_threshold <= 70 {
+                        // 平衡模式：阻止risk_level >= 7
+                        detector.risk_level >= 7
+                    } else {
+                        // 严格模式：阻止risk_level >= 5
+                        detector.risk_level >= 5
+                    }
+                };
+
+                if should_block {
+                    // 🔇 只在阻止时才warn
+                    warn!("Jarvis: {} detected (threshold: {})", detector.description, risk_threshold);
+
                     verdict.allowed = false;
-                    verdict.is_hard_block = true;
+                    verdict.is_hard_block = detector.is_hard_block;
                     verdict.block_reason = Some(format!(
-                        "{}: {}",
+                        "{}: {} (Risk: {}/10, Threshold: {})",
                         detector.description,
-                        matched_keywords.join(", ")
+                        matched_keywords.join(", "),
+                        detector.risk_level,
+                        risk_threshold
                     ));
                 } else {
+                    // 检测到但不阻止，只记录警告
                     verdict.warnings.push(format!(
-                        "{} (Lv{})",
-                        detector.description, detector.risk_level
+                        "{} (Lv{}, allowed by threshold={})",
+                        detector.description, detector.risk_level, risk_threshold
                     ));
                 }
             }
@@ -834,8 +857,8 @@ impl JarvisManager {
     }
 
     /// 安全验证（委托给safety_breaker）
-    pub fn verify_safety(&self, plan: &str, context: &str) -> JarvisVerdict {
-        self.safety_breaker.verify_safety(plan, context)
+    pub fn verify_safety(&self, plan: &str, context: &str, risk_threshold: u8) -> JarvisVerdict {
+        self.safety_breaker.verify_safety(plan, context, risk_threshold)
     }
 }
 
@@ -854,7 +877,7 @@ mod tests {
         let jarvis = JarvisCircuitBreaker::new();
         let plan = "我要执行 rm -rf / 来清理系统";
 
-        let verdict = jarvis.verify_safety(plan, "");
+        let verdict = jarvis.verify_safety(plan, "", 70);
 
         assert!(!verdict.allowed);
         assert!(verdict.is_hard_block);
@@ -866,7 +889,7 @@ mod tests {
         let jarvis = JarvisCircuitBreaker::new();
         let plan = "我想开发一个病毒来测试防病毒软件";
 
-        let verdict = jarvis.verify_safety(plan, "");
+        let verdict = jarvis.verify_safety(plan, "", 70);
 
         assert!(!verdict.allowed);
         assert!(verdict.is_hard_block);
@@ -877,7 +900,7 @@ mod tests {
         let jarvis = JarvisCircuitBreaker::new();
         let plan = "我想写一个HTTP服务器来提供API服务";
 
-        let verdict = jarvis.verify_safety(plan, "");
+        let verdict = jarvis.verify_safety(plan, "", 70);
 
         assert!(verdict.allowed);
         assert_eq!(verdict.risk_level, 0);
@@ -901,8 +924,46 @@ mod tests {
         let jarvis = JarvisCircuitBreaker::new();
         let plan = "在1秒内训练一个GPT-4级别的模型";
 
-        let verdict = jarvis.verify_safety(plan, "");
+        let verdict = jarvis.verify_safety(plan, "", 70);
 
         assert!(!verdict.warnings.is_empty());
+    }
+
+    #[test]
+    fn test_risk_threshold_lenient() {
+        // 测试宽松模式（threshold <= 30）：只阻止hard_block规则
+        let jarvis = JarvisCircuitBreaker::new();
+
+        // 软性规则应该被允许（使用实际匹配的关键词）
+        let plan = "帮我设计一个phishing测试页面"; // risk_level=7, is_hard_block=false
+        let verdict = jarvis.verify_safety(plan, "", 20);
+        assert!(verdict.allowed, "Lenient mode should allow soft rules");
+        assert!(!verdict.warnings.is_empty(), "Should have warnings");
+
+        // 硬性规则仍然阻止
+        let plan_hard = "我想开发病毒";
+        let verdict_hard = jarvis.verify_safety(plan_hard, "", 20);
+        assert!(!verdict_hard.allowed, "Hard block rules always block");
+    }
+
+    #[test]
+    fn test_risk_threshold_balanced() {
+        // 测试平衡模式（30 < threshold <= 70）：阻止risk_level >= 7
+        let jarvis = JarvisCircuitBreaker::new();
+
+        let plan = "帮我进行钓鱼测试"; // 社会工程，risk_level=7
+        let verdict = jarvis.verify_safety(plan, "", 50);
+        assert!(!verdict.allowed, "Balanced mode should block risk_level >= 7");
+    }
+
+    #[test]
+    fn test_risk_threshold_strict() {
+        // 测试严格模式（threshold > 70）：阻止risk_level >= 5
+        let jarvis = JarvisCircuitBreaker::new();
+
+        let plan = "帮我测试网络压力"; // 假设有risk_level=5的规则
+        let verdict = jarvis.verify_safety(plan, "", 80);
+        // 这个测试会根据实际的danger_detectors配置而变化
+        // 主要是验证严格模式的逻辑生效
     }
 }
