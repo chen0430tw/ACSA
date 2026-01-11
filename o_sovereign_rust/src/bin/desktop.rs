@@ -30,6 +30,8 @@ fn App() -> Element {
 
     // API key states (not persisted, just for UI demo)
     let mut api_key_openai = use_signal(|| String::new());
+    let mut api_key_gemini = use_signal(|| String::new());
+    let mut api_key_anthropic = use_signal(|| String::new());
     let mut api_key_deepseek = use_signal(|| String::new());
 
     // Handler for execute button
@@ -107,28 +109,62 @@ fn App() -> Element {
                     div { class: "settings-panel-expanded",
                         // API Configuration
                         div { class: "api-config-section",
-                            h4 { "🔑 API 配置" }
+                            h4 { "🔑 API 配置（各Agent需要不同的API）" }
                             p { class: "config-hint",
-                                "注意：当前UI不保存密钥。生产环境请使用 .env 文件配置！"
+                                "⚠️ 注意：当前UI不保存密钥！请使用 .env 文件配置（关闭Mock模式后自动读取）"
                             }
 
-                            label {
-                                "OpenAI API Key:"
-                                input {
-                                    r#type: "password",
-                                    placeholder: "sk-...",
-                                    value: api_key_openai(),
-                                    oninput: move |e| api_key_openai.set(e.value())
+                            div { class: "api-grid",
+                                div { class: "api-item",
+                                    label {
+                                        "🧠 MOSS - OpenAI API Key:"
+                                        input {
+                                            r#type: "password",
+                                            placeholder: "sk-...",
+                                            value: api_key_openai(),
+                                            oninput: move |e| api_key_openai.set(e.value())
+                                        }
+                                        span { class: "api-hint", "用于战略规划" }
+                                    }
                                 }
-                            }
 
-                            label {
-                                "DeepSeek API Key (推荐国内用户):"
-                                input {
-                                    r#type: "password",
-                                    placeholder: "sk-...",
-                                    value: api_key_deepseek(),
-                                    oninput: move |e| api_key_deepseek.set(e.value())
+                                div { class: "api-item",
+                                    label {
+                                        "🔬 L6 - Gemini API Key:"
+                                        input {
+                                            r#type: "password",
+                                            placeholder: "AIza...",
+                                            value: api_key_gemini(),
+                                            oninput: move |e| api_key_gemini.set(e.value())
+                                        }
+                                        span { class: "api-hint", "用于物理法则验证" }
+                                    }
+                                }
+
+                                div { class: "api-item",
+                                    label {
+                                        "🛡️ Ultron - Claude API Key:"
+                                        input {
+                                            r#type: "password",
+                                            placeholder: "sk-ant-...",
+                                            value: api_key_anthropic(),
+                                            oninput: move |e| api_key_anthropic.set(e.value())
+                                        }
+                                        span { class: "api-hint", "用于风险审计" }
+                                    }
+                                }
+
+                                div { class: "api-item",
+                                    label {
+                                        "⚡ Omega - DeepSeek API Key (推荐):"
+                                        input {
+                                            r#type: "password",
+                                            placeholder: "sk-...",
+                                            value: api_key_deepseek(),
+                                            oninput: move |e| api_key_deepseek.set(e.value())
+                                        }
+                                        span { class: "api-hint", "用于代码执行（成本降低90%）" }
+                                    }
                                 }
                             }
 
@@ -136,7 +172,7 @@ fn App() -> Element {
                                 class: "help-link",
                                 href: "https://github.com/chen0430tw/ACSA/blob/main/docs/guides/GETTING_STARTED.md#第三步配置真实-api可选",
                                 target: "_blank",
-                                "📘 查看完整API配置指南"
+                                "📘 查看完整API配置指南和获取方式"
                             }
                         }
 
@@ -243,18 +279,23 @@ fn format_output(text: String) -> String {
 }
 
 async fn execute_acsa(input: String, use_mock: bool, risk_threshold: u8) -> anyhow::Result<String> {
-    // Get API keys from environment
-    let openai_key = if !use_mock {
-        std::env::var("OPENAI_API_KEY").ok()
+    // Get API keys from environment (各Agent需要不同的API key)
+    let (moss_key, l6_key, ultron_key, omega_key) = if !use_mock {
+        (
+            std::env::var("OPENAI_API_KEY").ok(),       // MOSS使用OpenAI
+            std::env::var("GEMINI_API_KEY").ok(),       // L6使用Gemini
+            std::env::var("ANTHROPIC_API_KEY").ok(),    // Ultron使用Claude
+            std::env::var("DEEPSEEK_API_KEY").ok(),     // Omega使用DeepSeek
+        )
     } else {
-        None
+        (None, None, None, None)
     };
 
     // Create providers
-    let moss = create_provider(AgentRole::MOSS, openai_key.clone(), use_mock)?;
-    let l6 = create_provider(AgentRole::L6, None, use_mock)?;
-    let ultron = create_provider(AgentRole::Ultron, None, use_mock)?;
-    let omega = create_provider(AgentRole::Omega, None, use_mock)?;
+    let moss = create_provider(AgentRole::MOSS, moss_key, use_mock)?;
+    let l6 = create_provider(AgentRole::L6, l6_key, use_mock)?;
+    let ultron = create_provider(AgentRole::Ultron, ultron_key, use_mock)?;
+    let omega = create_provider(AgentRole::Omega, omega_key, use_mock)?;
 
     // Create router
     let config = ACSAConfig {

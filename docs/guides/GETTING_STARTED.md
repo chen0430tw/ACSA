@@ -62,22 +62,37 @@ Desktop 界面默认有一个勾选的选项：**"Use Mock Mode (no API keys req
 - ✅ 处理真实的业务任务
 - ✅ 获得智能化的决策支持
 
+### ⚠️ 重要：ACSA的4个Agent需要不同的API
+
+**ACSA使用多模型协同架构**，每个Agent有其擅长的领域：
+
+| Agent | 职责 | 需要的API | 说明 |
+|-------|------|-----------|------|
+| 🧠 **MOSS** | 战略规划 | `OPENAI_API_KEY` | GPT-4优秀的规划能力 |
+| 🔬 **L6** | 物理法则验证 | `GEMINI_API_KEY` | Gemini的科学推理能力 |
+| 🛡️ **Ultron** | 风险审计 | `ANTHROPIC_API_KEY` | Claude的安全意识强 |
+| ⚡ **Omega** | 代码执行 | `DEEPSEEK_API_KEY` | DeepSeek成本低90% |
+
+**推荐配置（国内用户）：**
+- 最低配置：只配置 `DEEPSEEK_API_KEY`（Omega必需，成本最低）
+- 完整体验：配置全部4个API（各取所长，效果最佳）
+
 ### 方法1：创建 .env 文件（推荐）
 
 在项目根目录创建 `.env` 文件：
 
 ```bash
-# 示例：使用 OpenAI
-OPENAI_API_KEY=sk-your-api-key-here
+# MOSS - 战略规划层（GPT-4）
+OPENAI_API_KEY=sk-your-openai-key-here
 
-# 示例：使用 Claude（Anthropic）
-ANTHROPIC_API_KEY=sk-ant-your-key-here
+# L6 - 物理法则验证层（Gemini）
+GEMINI_API_KEY=AIza-your-gemini-key-here
 
-# 示例：使用 DeepSeek（国内推荐）
-DEEPSEEK_API_KEY=your-deepseek-key
+# Ultron - 风险审计层（Claude）
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
 
-# 示例：使用 OpenRouter（支持多模型）
-OPENROUTER_API_KEY=sk-or-your-key-here
+# Omega - 执行层（DeepSeek，国内推荐）
+DEEPSEEK_API_KEY=sk-your-deepseek-key-here
 ```
 
 **保存后重启应用**，然后在界面中**取消勾选 Mock Mode**。
@@ -96,13 +111,14 @@ export OPENAI_API_KEY="sk-your-api-key-here"
 
 ### 如何获取 API 密钥？
 
-| 提供商 | 注册地址 | 费用 | 推荐度 |
-|--------|----------|------|--------|
-| **DeepSeek** | https://platform.deepseek.com | 低成本（￥1/百万token）| ⭐⭐⭐⭐⭐ 国内首选 |
-| **OpenRouter** | https://openrouter.ai | 按需付费 | ⭐⭐⭐⭐ 支持多模型 |
-| **OpenAI** | https://platform.openai.com | 中等成本 | ⭐⭐⭐⭐ 经典选择 |
-| **SiliconFlow** | https://siliconflow.cn | 低成本 | ⭐⭐⭐ 国内可用 |
-| **Anthropic** | https://console.anthropic.com | 高成本 | ⭐⭐⭐ Claude 官方 |
+| 提供商 | 注册地址 | 用于 | 费用 | 推荐度 |
+|--------|----------|------|------|--------|
+| **DeepSeek** | https://platform.deepseek.com | Omega | 极低成本（￥1/百万token）| ⭐⭐⭐⭐⭐ 国内首选 |
+| **OpenAI** | https://platform.openai.com | MOSS | 中等成本 | ⭐⭐⭐⭐ GPT-4规划强 |
+| **Google AI** | https://aistudio.google.com | L6 | 免费额度慷慨 | ⭐⭐⭐⭐ Gemini推理好 |
+| **Anthropic** | https://console.anthropic.com | Ultron | 略高成本 | ⭐⭐⭐⭐ Claude安全强 |
+| **OpenRouter** | https://openrouter.ai | All | 按需付费 | ⭐⭐⭐ 一键访问多模型 |
+| **SiliconFlow** | https://siliconflow.cn | 备选 | 低成本 | ⭐⭐⭐ 国内可用 |
 
 ---
 
