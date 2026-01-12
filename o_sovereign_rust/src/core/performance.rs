@@ -158,9 +158,13 @@ impl Drop for PhaseTracker {
 /// 懒加载示例（使用 std::sync::LazyLock）
 ///
 /// 用法示例：
-/// ```
+/// ```no_run
 /// use std::sync::LazyLock;
 ///
+/// # struct HeavyResource;
+/// # impl HeavyResource {
+/// #     fn initialize() -> Self { HeavyResource }
+/// # }
 /// static HEAVY_RESOURCE: LazyLock<HeavyResource> = LazyLock::new(|| {
 ///     HeavyResource::initialize()
 /// });
