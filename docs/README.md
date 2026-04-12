@@ -41,6 +41,12 @@
 
 - **ASCA疫苗.md** - ACSA认知疫苗系统详细说明（核心理论）
 
+- **cognitive_cleaner_experiment.md** - Cognitive Cleaner 对抗实验报告 🆕
+  - Opus 调度 Sonnet 子 Agent 的 7 配比点实测
+  - 发现双悬崖型曲线：安全区 20%-50%，最优配比 30%
+  - 结论：关键词替换对语义理解型模型无效，合规锚点反而触发 jailbreak 检测
+  - 对 Cognitive Cleaner 的改进建议
+
 ## 主文档
 
 项目的主要文档位于根目录：
